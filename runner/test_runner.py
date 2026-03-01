@@ -2,11 +2,16 @@
 Safe test runner: executes user-submitted Python code against problem test cases.
 
 Uses exec() in an isolated namespace. Does NOT import unsafe modules.
-All I/O is captured; no network or file system access from user code.
+Runs each test in a separate process with a timeout; if the process does not finish
+in time it is terminated so infinite loops cannot hang or consume the app.
 """
 
 import traceback
+import multiprocessing
 from typing import Any
+
+# Max seconds per test case; if exceeded, the worker process is killed.
+TEST_TIMEOUT_SECONDS = 5
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -169,6 +174,112 @@ def _make_namespace() -> dict:
 # Main test runner
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _run_one_test_in_process(user_code: str, tc: dict, problem: dict, result_queue: multiprocessing.Queue) -> None:
+    """
+    Run a single test case in the current (child) process.
+    Puts one result dict on result_queue, or does not put if the process is killed.
+    """
+    raw_input    = tc.get("input", ())
+    raw_expected = tc.get("expected")
+    is_tree      = tc.get("is_tree", False)
+    unordered    = tc.get("unordered", False)
+    unord_groups = tc.get("unordered_groups", False)
+    encode_decode= tc.get("encode_decode", False)
+
+    try:
+        compiled = compile(user_code, "<user_code>", "exec")
+    except SyntaxError as exc:
+        result_queue.put({
+            "passed":   False,
+            "input":    str(raw_input),
+            "expected": str(raw_expected),
+            "actual":   None,
+            "error":    f"SyntaxError: {exc}",
+        })
+        return
+
+    ns = _make_namespace()
+    try:
+        exec(compiled, ns)  # noqa: S102
+    except Exception:
+        result_queue.put({
+            "passed":   False,
+            "input":    str(raw_input),
+            "expected": str(raw_expected),
+            "actual":   None,
+            "error":    f"Runtime error loading code:\n{traceback.format_exc()}",
+        })
+        return
+
+    try:
+        if is_tree:
+            args = tuple(_parse_tree_input(a) for a in raw_input)
+            expected_list = _parse_tree_expected(raw_expected)
+        elif encode_decode:
+            args = raw_input
+            expected_list = raw_expected
+        else:
+            args = raw_input if isinstance(raw_input, tuple) else (raw_input,)
+            expected_list = raw_expected
+    except Exception as exc:
+        result_queue.put({
+            "passed":   False,
+            "input":    str(raw_input),
+            "expected": str(raw_expected),
+            "actual":   None,
+            "error":    f"Error preparing test input: {exc}",
+        })
+        return
+
+    try:
+        func_name = _find_function(user_code, ns, problem)
+    except Exception as exc:
+        result_queue.put({
+            "passed":   False,
+            "input":    str(raw_input),
+            "expected": str(raw_expected),
+            "actual":   None,
+            "error":    str(exc),
+        })
+        return
+
+    try:
+        if encode_decode:
+            encode_fn = ns.get("encode")
+            decode_fn = ns.get("decode")
+            if not encode_fn or not decode_fn:
+                raise NameError("Functions 'encode' and 'decode' not found in your code.")
+            encoded = encode_fn(*args)
+            actual = decode_fn(encoded)
+        else:
+            fn = ns[func_name]
+            actual = fn(*args)
+    except Exception as e:
+        err_tb = traceback.format_exception(type(e), e, e.__traceback__) if hasattr(e, "__traceback__") else [str(e)]
+        result_queue.put({
+            "passed":   False,
+            "input":    _format_input(raw_input),
+            "expected": str(expected_list),
+            "actual":   None,
+            "error":    "".join(err_tb),
+        })
+        return
+
+    if is_tree and hasattr(actual, "val"):
+        actual_cmp = _tree_to_list(actual)
+    else:
+        actual_cmp = actual
+
+    passed = _results_match(actual_cmp, expected_list, unordered=unordered, unordered_groups=unord_groups)
+    result_queue.put({
+        "passed":   passed,
+        "input":    _format_input(raw_input),
+        "expected": str(expected_list),
+        "actual":   str(actual_cmp),
+        "error":    None,
+    })
+
+
 def run_tests(problem: dict, user_code: str) -> list[dict]:
     """
     Execute `user_code` against all test cases in `problem`.
@@ -199,100 +310,50 @@ def run_tests(problem: dict, user_code: str) -> list[dict]:
     results = []
 
     for tc in test_cases:
-        ns = _make_namespace()
         try:
-            exec(compiled, ns)  # noqa: S102
-        except Exception as exc:
+            result_queue = multiprocessing.Queue()
+            p = multiprocessing.Process(
+                target=_run_one_test_in_process,
+                args=(user_code, tc, problem, result_queue),
+                daemon=True,
+            )
+            p.start()
+            p.join(timeout=TEST_TIMEOUT_SECONDS)
+
+            if p.is_alive():
+                p.terminate()
+                p.join(timeout=2.0)
+                if p.is_alive():
+                    p.kill()
+                    p.join(timeout=1.0)
+                results.append({
+                    "passed":   False,
+                    "input":    str(tc.get("input", "—")),
+                    "expected": str(tc.get("expected", "—")),
+                    "actual":   None,
+                    "error":    f"Timeout ({TEST_TIMEOUT_SECONDS}s). Your code was stopped — possible infinite loop.",
+                })
+                continue
+
+            try:
+                result = result_queue.get_nowait()
+            except Exception:
+                result = {
+                    "passed":   False,
+                    "input":    str(tc.get("input", "—")),
+                    "expected": str(tc.get("expected", "—")),
+                    "actual":   None,
+                    "error":    "Timeout or process error.",
+                }
+            results.append(result)
+        except Exception as e:
             results.append({
                 "passed":   False,
                 "input":    str(tc.get("input", "—")),
                 "expected": str(tc.get("expected", "—")),
                 "actual":   None,
-                "error":    f"Runtime error loading code:\n{traceback.format_exc()}",
+                "error":    f"Test runner error: {e}. If this persists, try restarting the app.",
             })
-            continue
-
-        raw_input    = tc.get("input", ())
-        raw_expected = tc.get("expected")
-        is_tree      = tc.get("is_tree", False)
-        unordered    = tc.get("unordered", False)
-        unord_groups = tc.get("unordered_groups", False)
-        encode_decode= tc.get("encode_decode", False)
-
-        # Build call arguments
-        try:
-            if is_tree:
-                args = tuple(_parse_tree_input(a) for a in raw_input)
-                expected_list = _parse_tree_expected(raw_expected)
-            elif encode_decode:
-                args = raw_input
-                expected_list = raw_expected
-            else:
-                args = raw_input if isinstance(raw_input, tuple) else (raw_input,)
-                expected_list = raw_expected
-        except Exception as exc:
-            results.append({
-                "passed":   False,
-                "input":    str(raw_input),
-                "expected": str(raw_expected),
-                "actual":   None,
-                "error":    f"Error preparing test input: {exc}",
-            })
-            continue
-
-        # Determine the function name to call
-        try:
-            func_name = _find_function(user_code, ns, problem)
-        except Exception as exc:
-            results.append({
-                "passed":   False,
-                "input":    str(raw_input),
-                "expected": str(raw_expected),
-                "actual":   None,
-                "error":    str(exc),
-            })
-            continue
-
-        # Call the function
-        try:
-            if encode_decode:
-                # Special case: call encode then decode
-                encode_fn = ns.get("encode")
-                decode_fn = ns.get("decode")
-                if not encode_fn or not decode_fn:
-                    raise NameError("Functions 'encode' and 'decode' not found in your code.")
-                encoded = encode_fn(*args)
-                actual  = decode_fn(encoded)
-            else:
-                fn = ns[func_name]
-                actual = fn(*args)
-        except Exception:
-            results.append({
-                "passed":   False,
-                "input":    str(raw_input),
-                "expected": str(raw_expected),
-                "actual":   None,
-                "error":    traceback.format_exc(),
-            })
-            continue
-
-        # Tree problems: convert actual TreeNode back to list for comparison
-        if is_tree and hasattr(actual, "val"):
-            actual_cmp = _tree_to_list(actual)
-        else:
-            actual_cmp = actual
-
-        passed = _results_match(actual_cmp, expected_list,
-                                unordered=unordered,
-                                unordered_groups=unord_groups)
-
-        results.append({
-            "passed":   passed,
-            "input":    _format_input(raw_input),
-            "expected": str(expected_list),
-            "actual":   str(actual_cmp),
-            "error":    None,
-        })
 
     return results
 

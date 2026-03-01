@@ -7,6 +7,23 @@ Run with:
     streamlit run app.py
 """
 
+import logging
+import multiprocessing
+
+# Suppress Streamlit's "missing ScriptRunContext" when test runner spawns a child process
+# (the child re-imports this module on Windows and triggers the warning — safe to ignore)
+class _SuppressStreamlitContextWarning(logging.Filter):
+    def filter(self, record):
+        msg = (record.getMessage() or "")
+        if "ScriptRunContext" in msg or "bare mode" in msg:
+            return False
+        return True
+
+_filter = _SuppressStreamlitContextWarning()
+for _log_name in ("streamlit", "streamlit.logger", "streamlit.runtime.scriptrunner", "streamlit.runtime.scriptrunner_utils.script_run_context"):
+    logging.getLogger(_log_name).addFilter(_filter)
+logging.getLogger().addFilter(_filter)
+
 import streamlit as st
 from streamlit_ace import st_ace
 
@@ -47,16 +64,25 @@ def _init_state():
         st.session_state.last_test_results = {}
     if "hint_text" not in st.session_state:
         st.session_state.hint_text = {}
+    if "editor_reset_counter" not in st.session_state:
+        st.session_state.editor_reset_counter = {}  # pid -> int; bump to force editor recreate on Reset
+    if "debug_counter" not in st.session_state:
+        st.session_state.debug_counter = 0
+    if "sidebar_show_filter" not in st.session_state:
+        st.session_state.sidebar_show_filter = None  # "All problems" | "Not started" | "In progress" | "Solved"
 
 
 def _save():
     """Persist the current progress state to disk."""
-    save_progress(
-        solved          = st.session_state.solved,
-        attempted       = st.session_state.attempted,
-        user_code_cache = st.session_state.user_code_cache,
-        show_solution   = st.session_state.show_solution,
-    )
+    try:
+        save_progress(
+            solved          = st.session_state.solved,
+            attempted       = st.session_state.attempted,
+            user_code_cache = st.session_state.user_code_cache,
+            show_solution   = st.session_state.show_solution,
+        )
+    except Exception:
+        pass  # Don't block or crash the app if save fails (e.g. disk full, permission)
 
 
 _init_state()
@@ -64,6 +90,8 @@ _init_state()
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
+
+SHOW_FILTER_OPTIONS = ["All problems", "Not started", "In progress", "Solved"]
 
 DIFFICULTY_COLORS = {
     "Easy":   "#00b8a3",
@@ -96,6 +124,45 @@ def _status_icon(problem_id: int) -> str:
     return "⬜"
 
 
+def _difficulty_button_css() -> str:
+    """Return a <style> block that colors the button immediately following a [data-difficulty] marker."""
+    e, m, h = DIFFICULTY_COLORS["Easy"], DIFFICULTY_COLORS["Medium"], DIFFICULTY_COLORS["Hard"]
+    eb, mb, hb = DIFFICULTY_BG["Easy"], DIFFICULTY_BG["Medium"], DIFFICULTY_BG["Hard"]
+    return f"""
+<style>
+/* Difficulty-colored problem list buttons (marker + adjacent button) */
+div.stMarkdown:has([data-difficulty="Easy"]) + div[data-testid*="stButton"] button {{
+    background: {e} !important;
+    color: white !important;
+    border-color: {e} !important;
+}}
+div.stMarkdown:has([data-difficulty="Medium"]) + div[data-testid*="stButton"] button {{
+    background: {m} !important;
+    color: white !important;
+    border-color: {m} !important;
+}}
+div.stMarkdown:has([data-difficulty="Hard"]) + div[data-testid*="stButton"] button {{
+    background: {h} !important;
+    color: white !important;
+    border-color: {h} !important;
+}}
+div.stMarkdown:has([data-active="true"]) + div[data-testid*="stButton"] button {{
+    font-weight: 700 !important;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.2) !important;
+}}
+</style>
+"""
+
+
+def _difficulty_marker_html(difficulty: str, is_active: bool) -> str:
+    """Return hidden div to mark the next button's difficulty (and optional active state)."""
+    active_attr = ' data-active="true"' if is_active else ""
+    return (
+        f'<div data-difficulty="{difficulty}"{active_attr} '
+        f'style="height:0;overflow:hidden;margin:0;padding:0;"></div>'
+    )
+
+
 def _overall_progress() -> tuple[int, int]:
     return len(st.session_state.solved), len(PROBLEMS)
 
@@ -115,6 +182,12 @@ def render_sidebar():
     with st.sidebar:
         st.markdown("## 🧠 Blind 75 Agent")
         st.caption("Python learning companion")
+
+        # Debug: if the app freezes, click this. If the number updates, the UI is fine and backend is stuck elsewhere.
+        with st.expander("🔧 Responsiveness test", expanded=False):
+            if st.button("Click to test"):
+                st.session_state.debug_counter += 1
+            st.caption(f"Counter: **{st.session_state.debug_counter}** — if this updates on click, the app framework is responsive.")
 
         if st.button("🏠 Home", use_container_width=True):
             st.session_state.current_problem_id = None
@@ -151,9 +224,10 @@ def render_sidebar():
         )
         show_only = st.selectbox(
             "Show",
-            options=["All problems", "Not started", "In progress", "Solved"],
-            index=0,
+            options=SHOW_FILTER_OPTIONS,
+            index=SHOW_FILTER_OPTIONS.index(st.session_state.sidebar_show_filter) if st.session_state.get("sidebar_show_filter") in SHOW_FILTER_OPTIONS else 0,
         )
+        st.session_state.sidebar_show_filter = show_only  # keep in sync when user changes in sidebar
 
         st.divider()
 
@@ -173,6 +247,7 @@ def render_sidebar():
         if not filtered:
             st.info("No problems match the current filters.")
         else:
+            st.markdown(_difficulty_button_css(), unsafe_allow_html=True)
             current_cat = None
             for p in filtered:
                 if p["category"] != current_cat:
@@ -183,6 +258,7 @@ def render_sidebar():
                 label = f"{icon} {p['id']}. {p['title']}"
                 is_active = st.session_state.current_problem_id == p["id"]
 
+                st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
                 if st.button(
                     label,
                     key=f"nav_{p['id']}",
@@ -211,22 +287,49 @@ def render_home():
 
     st.divider()
 
-    # Stats row
-    solved, total = _overall_progress()
+    # Stats row — click a number to filter the sidebar and (except Total) open the first matching problem
+    solved_count, total = _overall_progress()
     attempted     = len(st.session_state.attempted)
+    in_progress_count = attempted - solved_count if attempted >= solved_count else 0
+    not_started_count = total - attempted
+
+    in_progress_ids = sorted([p["id"] for p in PROBLEMS if p["id"] in st.session_state.attempted and p["id"] not in st.session_state.solved])
+    solved_ids     = sorted(st.session_state.solved)
+    not_started_ids= sorted([p["id"] for p in PROBLEMS if p["id"] not in st.session_state.attempted and p["id"] not in st.session_state.solved])
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Problems", total)
-    col2.metric("Solved", solved)
-    col3.metric("In Progress", attempted - solved if attempted >= solved else 0)
-    col4.metric("Not Started", total - attempted)
+    with col1:
+        st.caption("Total Problems")
+        if st.button(f"**{total}**", key="stat_total", use_container_width=True, help="Show all problems in sidebar"):
+            st.session_state.sidebar_show_filter = "All problems"
+            st.session_state.current_problem_id = None
+            st.rerun()
+    with col2:
+        st.caption("Solved")
+        if st.button(f"**{solved_count}**", key="stat_solved", use_container_width=True, disabled=(solved_count == 0), help="Go to first solved problem"):
+            st.session_state.sidebar_show_filter = "Solved"
+            st.session_state.current_problem_id = solved_ids[0] if solved_ids else None
+            st.rerun()
+    with col3:
+        st.caption("In Progress")
+        if st.button(f"**{in_progress_count}**", key="stat_in_progress", use_container_width=True, disabled=(in_progress_count == 0), help="Go to first in-progress problem"):
+            st.session_state.sidebar_show_filter = "In progress"
+            st.session_state.current_problem_id = in_progress_ids[0] if in_progress_ids else None
+            st.rerun()
+    with col4:
+        st.caption("Not Started")
+        if st.button(f"**{not_started_count}**", key="stat_not_started", use_container_width=True, disabled=(not_started_count == 0), help="Go to first not-started problem"):
+            st.session_state.sidebar_show_filter = "Not started"
+            st.session_state.current_problem_id = not_started_ids[0] if not_started_ids else None
+            st.rerun()
 
-    st.progress(solved / total if total else 0, text=f"{solved}/{total} solved")
+    st.progress(solved_count / total if total else 0, text=f"{solved_count}/{total} solved")
 
     st.divider()
 
     # Category overview
     st.markdown("### Problems by Category")
+    st.markdown(_difficulty_button_css(), unsafe_allow_html=True)
     for cat in CATEGORIES:
         cat_problems = [p for p in PROBLEMS if p["category"] == cat]
         cat_solved   = sum(1 for p in cat_problems if p["id"] in st.session_state.solved)
@@ -247,6 +350,8 @@ def render_home():
 
             for p in cat_problems:
                 icon = _status_icon(p["id"])
+                is_active = st.session_state.current_problem_id == p["id"]
+                st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
                 if st.button(
                     f"{icon} {p['id']}. {p['title']}",
                     key=f"home_nav_{p['id']}",
@@ -342,18 +447,23 @@ def render_problem(problem: dict):
 def _render_practice(problem: dict):
     pid = problem["id"]
 
-    # Load cached code or starter
+    # Show the question on the Practice tab so you don't have to switch to Learn
+    with st.expander("📋 Problem description", expanded=True):
+        st.markdown(problem["description"])
+
+    # Load cached code or starter. Editor key includes reset counter so "Reset Code" recreates the widget with starter_code.
     default_code = st.session_state.user_code_cache.get(pid, problem["starter_code"])
+    reset_count = st.session_state.editor_reset_counter.get(pid, 0)
 
     st.markdown("### Your Code")
     st.caption(
-        "Write your solution below. Click **Run Tests** to check it. "
+        "**Python 3** — Write your solution below. Click **Run Tests** to check it. "
         "Use the **Get AI Hint** button if you're stuck."
     )
 
     user_code = st_ace(
         value=default_code,
-        language="python",
+        language="python",  # Ace mode; caption below shows "Python 3" for consistency
         theme="tomorrow_night",
         font_size=14,
         tab_size=4,
@@ -362,7 +472,7 @@ def _render_practice(problem: dict):
         wrap=False,
         auto_update=True,
         min_lines=18,
-        key=f"editor_{pid}",
+        key=f"editor_{pid}_{reset_count}",
     )
 
     # Cache the current code
@@ -389,6 +499,7 @@ def _render_practice(problem: dict):
         with reset_col:
             if st.button("↩ Reset Code", key=f"reset_{pid}", use_container_width=True):
                 st.session_state.user_code_cache[pid] = problem["starter_code"]
+                st.session_state.editor_reset_counter[pid] = reset_count + 1
                 _save()
                 st.rerun()
         with solution_col:
@@ -509,5 +620,6 @@ def main():
             render_problem(problem)
 
 
-if __name__ == "__main__" or True:
-    main()
+if __name__ == "__main__":
+    if multiprocessing.current_process().name == "MainProcess":
+        main()
