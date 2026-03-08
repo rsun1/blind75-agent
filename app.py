@@ -218,6 +218,8 @@ def render_sidebar():
         st.divider()
 
         # Filter controls
+        search_query = st.text_input("Search", placeholder="Search by title…", label_visibility="collapsed")
+
         selected_category = st.selectbox(
             "Category",
             options=["All"] + CATEGORIES,
@@ -240,7 +242,8 @@ def render_sidebar():
         # Problem list
         filtered = [
             p for p in PROBLEMS
-            if (selected_category == "All" or p["category"] == selected_category)
+            if (not search_query or search_query.lower() in p["title"].lower())
+            and (selected_category == "All" or p["category"] == selected_category)
             and (selected_difficulty == "All" or p["difficulty"] == selected_difficulty)
             and (
                 show_only == "All problems"
