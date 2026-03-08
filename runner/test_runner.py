@@ -147,6 +147,27 @@ _ALLOWED_BUILTINS = {
     or (not isinstance(__builtins__, dict) and hasattr(__builtins__, name))
 }
 
+# Modules that user code is allowed to import (safe for DSA practice)
+_IMPORT_WHITELIST = frozenset({
+    "collections", "itertools", "math", "heapq", "bisect", "functools",
+    "re", "typing", "dataclasses", "copy", "string", "random", "json",
+    "decimal", "fractions", "operator", "array",
+})
+
+_builtin_import = (__builtins__.get("__import__") if isinstance(__builtins__, dict) else getattr(__builtins__, "__import__"))
+
+def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+    """Allow only whitelisted modules so user code can e.g. 'from collections import Counter'."""
+    if level != 0:
+        raise ImportError("Relative imports are not allowed in practice code.")
+    # Top-level module only (e.g. "collections" from "collections.abc")
+    top = name.split(".")[0]
+    if top not in _IMPORT_WHITELIST:
+        raise ImportError(f"Import of '{name}' is not allowed. Allowed: {sorted(_IMPORT_WHITELIST)}")
+    return _builtin_import(name, globals, locals, fromlist, level)
+
+_ALLOWED_BUILTINS["__import__"] = _safe_import
+
 
 def _make_namespace() -> dict:
     """Return a clean execution namespace with safe builtins and common stdlib."""

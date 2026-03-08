@@ -93,6 +93,12 @@ _init_state()
 
 SHOW_FILTER_OPTIONS = ["All problems", "Not started", "In progress", "Solved"]
 
+DIFFICULTY_DOT = {
+    "Easy":   "🟢",
+    "Medium": "🟡",
+    "Hard":   "🔴",
+}
+
 DIFFICULTY_COLORS = {
     "Easy":   "#00b8a3",
     "Medium": "#ffc01e",
@@ -255,7 +261,7 @@ def render_sidebar():
                     st.markdown(f"**{current_cat}**")
 
                 icon = _status_icon(p["id"])
-                label = f"{icon} {p['id']}. {p['title']}"
+                label = f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {p['id']}. {p['title']}"
                 is_active = st.session_state.current_problem_id == p["id"]
 
                 st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
@@ -353,7 +359,7 @@ def render_home():
                 is_active = st.session_state.current_problem_id == p["id"]
                 st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
                 if st.button(
-                    f"{icon} {p['id']}. {p['title']}",
+                    f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {p['id']}. {p['title']}",
                     key=f"home_nav_{p['id']}",
                     use_container_width=False,
                 ):
