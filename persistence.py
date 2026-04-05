@@ -37,11 +37,16 @@ def load_progress() -> dict:
             if key not in data:
                 data[key] = default_val
         # user_code_cache keys are stored as strings in JSON; convert to int
-        data["user_code_cache"] = {
-            int(k): v for k, v in data["user_code_cache"].items()
-        }
+        raw_cache = data.get("user_code_cache", {})
+        cleaned = {}
+        for k, v in raw_cache.items():
+            try:
+                cleaned[int(k)] = v
+            except (ValueError, TypeError):
+                pass  # skip corrupted keys, keep the rest
+        data["user_code_cache"] = cleaned
         return data
-    except (json.JSONDecodeError, Exception):
+    except Exception:
         return defaults
 
 
