@@ -27,9 +27,9 @@ logging.getLogger().addFilter(_filter)
 import streamlit as st
 from streamlit_ace import st_ace
 
-from problems.problems import PROBLEMS, CATEGORIES, DIFFICULTY_ORDER, get_problem_by_id
+from problems.problems import PROBLEMS, CATEGORIES, DIFFICULTY_ORDER, get_problem_by_id, BLIND75_IDS
 from runner.test_runner import run_tests
-from ai.hints import api_key_available, get_hint_streamed
+from ai.hints import api_key_available, get_hint_streamed, get_learn_session_streamed
 from persistence import load_progress, save_progress
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -64,12 +64,18 @@ def _init_state():
         st.session_state.last_test_results = {}
     if "hint_text" not in st.session_state:
         st.session_state.hint_text = {}
+    if "learn_session_text" not in st.session_state:
+        st.session_state.learn_session_text = {}
     if "editor_reset_counter" not in st.session_state:
         st.session_state.editor_reset_counter = {}  # pid -> int; bump to force editor recreate on Reset
     if "debug_counter" not in st.session_state:
         st.session_state.debug_counter = 0
     if "sidebar_show_filter" not in st.session_state:
         st.session_state.sidebar_show_filter = None  # "All problems" | "Not started" | "In progress" | "Solved"
+    if "sidebar_blind75_only" not in st.session_state:
+        st.session_state.sidebar_blind75_only = False
+    if "b75_celebration_shown" not in st.session_state:
+        st.session_state.b75_celebration_shown = False
 
 
 def _save():
@@ -81,8 +87,8 @@ def _save():
             user_code_cache = st.session_state.user_code_cache,
             show_solution   = st.session_state.show_solution,
         )
-    except Exception:
-        pass  # Don't block or crash the app if save fails (e.g. disk full, permission)
+    except Exception as exc:
+        st.toast(f"Warning: could not save progress ({exc})", icon="⚠️")
 
 
 _init_state()
@@ -173,6 +179,20 @@ def _overall_progress() -> tuple[int, int]:
     return len(st.session_state.solved), len(PROBLEMS)
 
 
+def _blind75_progress() -> tuple[int, int]:
+    """Returns (b75_solved_count, 75)."""
+    return sum(1 for pid in BLIND75_IDS if pid in st.session_state.solved), len(BLIND75_IDS)
+
+
+def _b75_badge() -> str:
+    """Small '⭐ B75' badge HTML shown on original Blind 75 problems."""
+    return (
+        '<span style="background:#fffbe6;color:#92660a;border:1px solid #d4a017;'
+        'border-radius:12px;padding:2px 8px;font-size:0.75rem;font-weight:700;">'
+        '⭐ B75</span>'
+    )
+
+
 def _go_to_problem(problem_id: int):
     # Save any code currently in the editor before switching problems
     _save()
@@ -215,6 +235,12 @@ def render_sidebar():
         st.markdown(f"**Progress: {solved} / {total}**")
         st.progress(solved / total if total else 0)
 
+        # Blind 75 progress bar
+        b75_solved, b75_total = _blind75_progress()
+        b75_label = "🏆 Complete!" if b75_solved == b75_total else f"{b75_solved} / {b75_total}"
+        st.markdown(f"**⭐ Blind 75: {b75_label}**")
+        st.progress(b75_solved / b75_total)
+
         st.divider()
 
         # Filter controls
@@ -237,6 +263,13 @@ def render_sidebar():
         )
         st.session_state.sidebar_show_filter = show_only  # keep in sync when user changes in sidebar
 
+        blind75_only = st.checkbox(
+            "⭐ Blind 75 only",
+            value=st.session_state.sidebar_blind75_only,
+            help="Show only the 75 original Blind 75 problems (hide the 33 bonus extras)",
+        )
+        st.session_state.sidebar_blind75_only = blind75_only
+
         st.divider()
 
         # Problem list
@@ -245,6 +278,7 @@ def render_sidebar():
             if (not search_query or search_query.lower() in p["title"].lower())
             and (selected_category == "All" or p["category"] == selected_category)
             and (selected_difficulty == "All" or p["difficulty"] == selected_difficulty)
+            and (not blind75_only or p["id"] in BLIND75_IDS)
             and (
                 show_only == "All problems"
                 or (show_only == "Not started"   and p["id"] not in st.session_state.attempted and p["id"] not in st.session_state.solved)
@@ -264,7 +298,8 @@ def render_sidebar():
                     st.markdown(f"**{current_cat}**")
 
                 icon = _status_icon(p["id"])
-                label = f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {p['id']}. {p['title']}"
+                b75_star = "⭐" if p["id"] in BLIND75_IDS else "  "
+                label = f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {b75_star} {p['id']}. {p['title']}"
                 is_active = st.session_state.current_problem_id == p["id"]
 
                 st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
@@ -290,7 +325,7 @@ def render_home():
         "- 📖 **Learn tab** — problem description and Python concepts explained for beginners\n"
         "- 💻 **Practice tab** — an in-browser code editor with starter code\n"
         "- ✅ **Test runner** — run your code against real test cases instantly\n"
-        "- 💡 **AI hints** — get a Socratic hint powered by OpenAI when you're stuck\n"
+        "- 💡 **AI hints** — get a Socratic hint powered by Claude when you're stuck\n"
         "- 👁 **View solution** — reveal the reference solution after attempting"
     )
 
@@ -334,6 +369,44 @@ def render_home():
 
     st.progress(solved_count / total if total else 0, text=f"{solved_count}/{total} solved")
 
+    # ── Blind 75 progress ────────────────────────────────────────────────────
+    b75_solved, b75_total = _blind75_progress()
+    b75_remaining = b75_total - b75_solved
+
+    if b75_solved == b75_total:
+        # 🎉 Celebration — trigger balloons once per session
+        if not st.session_state.b75_celebration_shown:
+            st.balloons()
+            st.session_state.b75_celebration_shown = True
+        st.markdown(
+            """
+            <div style="background:linear-gradient(135deg,#fffbe6,#fff3cc);
+                        border:2px solid #d4a017;border-radius:12px;
+                        padding:18px 24px;margin:12px 0;">
+              <div style="font-size:2rem;margin-bottom:4px;">🏆🎉🌟</div>
+              <div style="font-size:1.2rem;font-weight:700;color:#92660a;">
+                Blind 75 Complete!
+              </div>
+              <div style="color:#6b4c0a;margin-top:4px;">
+                You've solved all 75 original Blind 75 problems.
+                That's a huge milestone — your interview prep game is 🔥!
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    else:
+        b75_col1, b75_col2 = st.columns([3, 1])
+        with b75_col1:
+            st.markdown(f"**⭐ Blind 75 Progress: {b75_solved} / {b75_total}** — {b75_remaining} original problems remaining")
+            st.progress(b75_solved / b75_total)
+        with b75_col2:
+            if st.button("⭐ Filter Blind 75", key="home_b75_filter", use_container_width=True,
+                         help="Show only Blind 75 problems in the sidebar"):
+                st.session_state.sidebar_blind75_only = True
+                st.session_state.sidebar_show_filter = "All problems"
+                st.rerun()
+
     st.divider()
 
     # Category overview
@@ -348,7 +421,9 @@ def render_home():
         medium = sum(1 for p in cat_problems if p["difficulty"] == "Medium")
         hard   = sum(1 for p in cat_problems if p["difficulty"] == "Hard")
 
-        with st.expander(f"**{cat}** — {cat_solved}/{cat_total} solved", expanded=False):
+        cat_b75 = sum(1 for p in cat_problems if p["id"] in BLIND75_IDS)
+        b75_suffix = f" · ⭐ {cat_b75} Blind 75" if cat_b75 else ""
+        with st.expander(f"**{cat}** — {cat_solved}/{cat_total} solved{b75_suffix}", expanded=False):
             diff_str = "  ".join(filter(None, [
                 f'<span style="color:{DIFFICULTY_COLORS["Easy"]}">● {easy} Easy</span>'   if easy   else "",
                 f'<span style="color:{DIFFICULTY_COLORS["Medium"]}">● {medium} Medium</span>' if medium else "",
@@ -359,10 +434,11 @@ def render_home():
 
             for p in cat_problems:
                 icon = _status_icon(p["id"])
+                b75_star = "⭐" if p["id"] in BLIND75_IDS else "  "
                 is_active = st.session_state.current_problem_id == p["id"]
                 st.markdown(_difficulty_marker_html(p["difficulty"], is_active), unsafe_allow_html=True)
                 if st.button(
-                    f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {p['id']}. {p['title']}",
+                    f"{DIFFICULTY_DOT[p['difficulty']]} {icon} {b75_star} {p['id']}. {p['title']}",
                     key=f"home_nav_{p['id']}",
                     use_container_width=False,
                 ):
@@ -380,10 +456,10 @@ def render_home():
 
     # AI key status
     if api_key_available():
-        st.success("✅ OpenAI API key detected — AI hints are enabled.")
+        st.success("✅ Anthropic API key detected — AI hints are enabled.")
     else:
         st.warning(
-            "⚠️ No OpenAI API key found. AI hints will be disabled. "
+            "⚠️ No Anthropic API key found. AI hints will be disabled. "
             "Copy `.env.example` → `.env` and add your key to enable them."
         )
 
@@ -413,7 +489,10 @@ def render_problem(problem: dict):
     with col_title:
         st.markdown(f"## {pid}. {problem['title']}")
     with col_badge:
-        st.markdown(_badge(problem["difficulty"]), unsafe_allow_html=True)
+        badge_html = _badge(problem["difficulty"])
+        if pid in BLIND75_IDS:
+            badge_html += "&nbsp;&nbsp;" + _b75_badge()
+        st.markdown(badge_html, unsafe_allow_html=True)
         st.caption(problem["category"])
 
     # Navigation
@@ -443,14 +522,76 @@ def render_problem(problem: dict):
         st.markdown("### Python Tips & Approach")
         st.markdown(problem["python_tips"])
 
+        st.divider()
+
+        # ── AI Learn Session ──────────────────────────────────────────────────
+        st.markdown("### 📚 Learn Session")
+        st.caption(
+            "Get a full AI-powered tutorial: key insight, step-by-step approach, "
+            "example trace, annotated code walkthrough, complexity analysis, and more."
+        )
+
+        learn_col1, learn_col2 = st.columns([2, 5])
+        with learn_col1:
+            learn_clicked = st.button(
+                "🎓 Start Learn Session",
+                key=f"learn_{pid}",
+                type="primary",
+                use_container_width=True,
+                disabled=not api_key_available(),
+                help="Requires an Anthropic API key in .env" if not api_key_available() else "Generate a full teaching session for this problem",
+            )
+        with learn_col2:
+            if pid in st.session_state.learn_session_text and st.session_state.learn_session_text[pid]:
+                if st.button("🗑 Clear Session", key=f"clear_learn_{pid}", use_container_width=False):
+                    st.session_state.learn_session_text.pop(pid, None)
+                    st.rerun()
+
+        if learn_clicked:
+            session_placeholder = st.empty()
+            full_session = ""
+            with st.spinner("Generating your learn session…"):
+                for chunk in get_learn_session_streamed(problem):
+                    full_session += chunk
+                    session_placeholder.markdown(full_session)
+            st.session_state.learn_session_text[pid] = full_session
+        elif pid in st.session_state.learn_session_text and st.session_state.learn_session_text[pid]:
+            st.markdown(st.session_state.learn_session_text[pid])
+
+        if not api_key_available():
+            st.info(
+                "Add your `ANTHROPIC_API_KEY` to `.env` to unlock the AI Learn Session."
+            )
+
+        st.divider()
+
         if st.button("💻 Go to Practice →", key=f"goto_practice_{pid}"):
-            # Streamlit doesn't support switching tabs programmatically;
-            # just inform the user.
-            st.info("Click the **💻 Practice** tab above to start coding!")
+            st.session_state[f"_switch_to_practice_{pid}"] = True
 
     # ── Practice tab ─────────────────────────────────────────────────────────
     with tab_practice:
         _render_practice(problem)
+
+    # Switch to Practice tab via JS when the button above is clicked
+    if st.session_state.get(f"_switch_to_practice_{pid}"):
+        st.session_state[f"_switch_to_practice_{pid}"] = False
+        import streamlit.components.v1 as components
+        components.html(
+            """<script>
+            setTimeout(function() {
+                var tabs = window.parent.document.querySelectorAll(
+                    '[data-testid="stTabs"] button[role="tab"]'
+                );
+                for (var i = 0; i < tabs.length; i++) {
+                    if (tabs[i].innerText.indexOf('Practice') !== -1) {
+                        tabs[i].click();
+                        break;
+                    }
+                }
+            }, 50);
+            </script>""",
+            height=0,
+        )
 
 
 def _render_practice(problem: dict):
@@ -500,7 +641,7 @@ def _render_practice(problem: dict):
             key=f"hint_{pid}",
             use_container_width=True,
             disabled=not api_key_available(),
-            help="Requires an OpenAI API key in .env" if not api_key_available() else "Get a hint from the AI tutor",
+            help="Requires an Anthropic API key in .env" if not api_key_available() else "Get a hint from the AI tutor",
         )
 
     with btn_col3:
