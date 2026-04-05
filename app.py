@@ -607,13 +607,13 @@ def _render_practice(problem: dict):
 
     st.markdown("### Your Code")
     st.caption(
-        "**Python 3** — Write your solution below. Click **Run Tests** to check it. "
+        "**Python 3.10+** — Write your solution below. Click **Run Tests** to check it. "
         "Use the **Get AI Hint** button if you're stuck."
     )
 
     user_code = st_ace(
         value=default_code,
-        language="python",  # Ace mode; caption below shows "Python 3" for consistency
+        language="python",  # Ace mode; caption below shows "Python 3.10+" for consistency
         theme="tomorrow_night",
         font_size=14,
         tab_size=4,
@@ -623,6 +623,53 @@ def _render_practice(problem: dict):
         auto_update=True,
         min_lines=18,
         key=f"editor_{pid}_{reset_count}",
+    )
+
+    # Inject JS to auto-indent after Enter following a comma (runs inside the ace iframe)
+    import streamlit.components.v1 as components
+    components.html(
+        """
+        <script>
+        (function() {
+            function setup() {
+                try {
+                    var frames = window.parent.document.querySelectorAll('iframe');
+                    for (var i = 0; i < frames.length; i++) {
+                        try {
+                            var doc = frames[i].contentDocument;
+                            if (!doc) continue;
+                            var aceDiv = doc.querySelector('.ace_editor');
+                            if (!aceDiv || !aceDiv.id) continue;
+                            var fw = frames[i].contentWindow;
+                            if (!fw.ace) continue;
+                            var editor = fw.ace.edit(aceDiv.id);
+                            if (editor._commaIndentSetup) continue;
+                            editor._commaIndentSetup = true;
+                            editor.commands.addCommand({
+                                name: 'newlineAfterComma',
+                                bindKey: {win: 'Return', mac: 'Return'},
+                                exec: function(e) {
+                                    var cur = e.getCursorPosition();
+                                    var line = e.session.getLine(cur.row);
+                                    var before = line.substring(0, cur.column).replace(/\\s+$/, '');
+                                    if (before.endsWith(',')) {
+                                        var indent = line.match(/^(\\s*)/)[1] + '    ';
+                                        e.insert('\\n' + indent);
+                                    } else {
+                                        e.execCommand('insertstring', '\\n');
+                                    }
+                                }
+                            });
+                        } catch(e) {}
+                    }
+                } catch(e) {}
+            }
+            setTimeout(setup, 400);
+            setTimeout(setup, 1200);
+        })();
+        </script>
+        """,
+        height=0,
     )
 
     # Cache the current code

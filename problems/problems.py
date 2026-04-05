@@ -45,7 +45,7 @@ A Python `dict` lets you look up values in O(1) time — much faster than scanni
 - If no → store `{2: 0}` (value → index) and move on.
 
 **Useful Python syntax to know:**
-```python3
+```python
 d = {}          # empty dictionary
 d[key] = val    # store a value
 key in d        # check if key exists (returns True/False)
@@ -56,7 +56,7 @@ d[key]          # retrieve value
 **Space complexity:** O(n) — at most n entries in the dict.
 """,
         "starter_code": """\
-def two_sum(nums, target):
+def two_sum(nums: list[int], target: int) -> list[int]:
     \"\"\"
     Args:
         nums   (list[int]): list of integers
@@ -117,7 +117,7 @@ Use two variables as you scan left to right:
 For each price, check: `price - min_price`. If it beats `max_profit`, update it.
 
 **Useful Python built-ins:**
-```python3
+```python
 min(a, b)   # returns the smaller of two values
 max(a, b)   # returns the larger
 float('inf')  # represents positive infinity (good initial "min" value)
@@ -127,7 +127,7 @@ float('inf')  # represents positive infinity (good initial "min" value)
 **Space complexity:** O(1) — only two extra variables.
 """,
         "starter_code": """\
-def max_profit(prices):
+def max_profit(prices: list[int]) -> int:
     \"\"\"
     Args:
         prices (list[int]): stock prices by day
@@ -183,7 +183,7 @@ A Python `set` stores only **unique** values. If you add a duplicate, it is igno
 1. Compare `len(nums)` to `len(set(nums))` — if different, there's a duplicate.
 2. Walk through `nums`, and for each element check if it's already in a set; if so return `True`.
 
-```python3
+```python
 s = set()
 s.add(x)      # add element x
 x in s        # check membership in O(1)
@@ -193,7 +193,7 @@ x in s        # check membership in O(1)
 **Space complexity:** O(n)
 """,
         "starter_code": """\
-def contains_duplicate(nums):
+def contains_duplicate(nums: list[int]) -> bool:
     \"\"\"
     Args:
         nums (list[int])
@@ -245,14 +245,14 @@ Split the problem into two passes:
 
 You can do this with O(1) extra space (besides output) by using a running variable.
 
-```python3
+```python
 result = [1] * len(nums)   # initialise output to all 1s
 ```
 
 Walk left → right filling prefix products, then right → left multiplying in suffix products.
 """,
         "starter_code": """\
-def product_except_self(nums):
+def product_except_self(nums: list[int]) -> list[int]:
     \"\"\"
     Args:
         nums (list[int])
@@ -315,7 +315,7 @@ Walk through the array keeping track of:
 
 At each step: if `current_sum` drops below 0, reset it to 0 (it's better to start fresh than drag a negative sum forward).
 
-```python3
+```python
 current_sum = 0
 max_sum     = nums[0]        # handle all-negative arrays
 
@@ -327,7 +327,7 @@ for num in nums:
 **Time:** O(n) | **Space:** O(1)
 """,
         "starter_code": """\
-def max_subarray(nums):
+def max_subarray(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int])
@@ -383,7 +383,7 @@ Output: False
 **Key Python concepts: string methods + two-pointer technique**
 
 **Step 1 — Clean the string:**
-```python3
+```python
 s.isalnum()   # True if character is letter or digit
 s.lower()     # convert to lowercase
 ```
@@ -398,13 +398,13 @@ If at any point `s[left] != s[right]`, return `False`.
 If the pointers cross, return `True`.
 
 **Alternative one-liner (after cleaning):**
-```python3
+```python
 cleaned = [c.lower() for c in s if c.isalnum()]
 return cleaned == cleaned[::-1]   # [::-1] reverses a list
 ```
 """,
         "starter_code": """\
-def is_palindrome(s):
+def is_palindrome(s: str) -> bool:
     \"\"\"
     Args:
         s (str)
@@ -459,7 +459,7 @@ Output: [[-1, -1, 2], [-1, 0, 1]]
 2. Fix one number `nums[i]` and use two pointers (`left`, `right`) on the rest of the array to find pairs that sum to `-nums[i]`.
 3. Skip duplicate values for `i`, `left`, and `right` to avoid repeated triplets.
 
-```python3
+```python
 nums.sort()
 for i in range(len(nums) - 2):
     if i > 0 and nums[i] == nums[i-1]:
@@ -477,7 +477,7 @@ for i in range(len(nums) - 2):
 ```
 """,
         "starter_code": """\
-def three_sum(nums):
+def three_sum(nums: list[int]) -> list[list[int]]:
     \"\"\"
     Args:
         nums (list[int])
@@ -555,7 +555,7 @@ Maintain a window `[left, right]` containing no repeated characters.
 - If `s[right]` is already in the set, shrink the window from the left until the duplicate is removed.
 - Track the maximum window size seen.
 
-```python3
+```python
 char_set = set()
 left = 0
 max_len = 0
@@ -571,7 +571,7 @@ for right in range(len(s)):
 **Time:** O(n) | **Space:** O(min(n, alphabet_size))
 """,
         "starter_code": """\
-def length_of_longest_substring(s):
+def length_of_longest_substring(s: str) -> int:
     \"\"\"
     Args:
         s (str)
@@ -639,7 +639,7 @@ Keep track of `left` and `right` boundaries. At each step:
 3. If `nums[mid] < target`  → target must be in the **right** half → `left = mid + 1`
 4. If `nums[mid] > target`  → target must be in the **left** half → `right = mid - 1`
 
-```python3
+```python
 left, right = 0, len(nums) - 1
 while left <= right:
     mid = (left + right) // 2
@@ -649,7 +649,7 @@ while left <= right:
 **Time:** O(log n) | **Space:** O(1)
 """,
         "starter_code": """\
-def search(nums, target):
+def search(nums: list[int], target: int) -> int:
     \"\"\"
     Args:
         nums   (list[int]): sorted array
@@ -713,7 +713,7 @@ Output:
 **Key concept: Tree Node & Recursion**
 
 A binary tree node is defined as:
-```python3
+```python
 class TreeNode:
     def __init__(self, val=0, left=None, right=None):
         self.val   = val
@@ -724,7 +724,7 @@ class TreeNode:
 To invert a tree, simply swap the left and right children — then recursively do the same for both subtrees.
 
 **Recursive approach:**
-```python3
+```python
 def invert_tree(root):
     if root is None:
         return None
@@ -738,12 +738,12 @@ The swap `a, b = b, a` is a Python idiom for swapping two variables without a te
 """,
         "starter_code": """\
 class TreeNode:
-    def __init__(self, val=0, left=None, right=None):
+    def __init__(self, val: int = 0, left: 'TreeNode | None' = None, right: 'TreeNode | None' = None) -> None:
         self.val   = val
         self.left  = left
         self.right = right
 
-def invert_tree(root):
+def invert_tree(root: TreeNode | None) -> TreeNode | None:
     \"\"\"
     Args:
         root (TreeNode): root of a binary tree
@@ -803,7 +803,7 @@ Output: True
 ```
 """,
         "python_tips": "Hint: use `sorted()` or `collections.Counter` to compare character frequencies.",
-        "starter_code": "def is_anagram(s, t):\n    pass\n",
+        "starter_code": "def is_anagram(s: str, t: str) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("anagram", "nagaram"), "expected": True},
             {"input": ("rat", "car"),          "expected": False},
@@ -829,7 +829,7 @@ Output: [["bat"],["nat","tan"],["ate","eat","tea"]]
 ```
 """,
         "python_tips": "Hint: sort each word to get a canonical key, then group by that key using a dict.",
-        "starter_code": "def group_anagrams(strs):\n    pass\n",
+        "starter_code": "def group_anagrams(strs: list[str]) -> list[list[str]]:\n    pass\n",
         "test_cases": [
             {
                 "input": (["eat", "tea", "tan", "ate", "nat", "bat"],),
@@ -861,7 +861,7 @@ Output: [1, 2]
 ```
 """,
         "python_tips": "Hint: use `collections.Counter` then `most_common(k)`.",
-        "starter_code": "def top_k_frequent(nums, k):\n    pass\n",
+        "starter_code": "def top_k_frequent(nums: list[int], k: int) -> list[int]:\n    pass\n",
         "test_cases": [
             {"input": ([1, 1, 1, 2, 2, 3], 2), "expected": [1, 2], "unordered": True},
             {"input": ([1], 1),                  "expected": [1]},
@@ -888,7 +888,7 @@ Decoded: ["lint","code","love","you"]
 ```
 """,
         "python_tips": "Hint: prefix each string with its length and a delimiter, e.g., `'4#lint'`.",
-        "starter_code": "def encode(strs):\n    pass\n\ndef decode(s):\n    pass\n",
+        "starter_code": "def encode(strs: list[str]) -> str:\n    pass\n\ndef decode(s: str) -> list[str]:\n    pass\n",
         "test_cases": [
             {
                 "input": (["lint", "code", "love", "you"],),
@@ -926,7 +926,7 @@ Output: 4    # [1,2,3,4]
 ```
 """,
         "python_tips": "Hint: put all numbers in a set. A sequence starts at `n` only if `n-1` is NOT in the set.",
-        "starter_code": "def longest_consecutive(nums):\n    pass\n",
+        "starter_code": "def longest_consecutive(nums: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([100, 4, 200, 1, 3, 2],), "expected": 4},
             {"input": ([0, 3, 7, 2, 5, 8, 4, 6, 0, 1],), "expected": 9},
@@ -961,7 +961,7 @@ Output: 49
 ```
 """,
         "python_tips": "Hint: start with the widest container (left=0, right=end) and move the shorter side inward.",
-        "starter_code": "def max_area(height):\n    pass\n",
+        "starter_code": "def max_area(height: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([1, 8, 6, 2, 5, 4, 8, 3, 7],), "expected": 49},
             {"input": ([1, 1],), "expected": 1},
@@ -995,7 +995,7 @@ Output: 6
 ```
 """,
         "python_tips": "Hint: two-pointer approach — track `left_max` and `right_max`, water at index = min(left_max, right_max) - height[i].",
-        "starter_code": "def trap(height):\n    pass\n",
+        "starter_code": "def trap(height: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],), "expected": 6},
             {"input": ([4, 2, 0, 3, 2, 5],), "expected": 9},
@@ -1038,7 +1038,7 @@ Output: 4
 ```
 """,
         "python_tips": "Hint: sliding window. The window is valid when `(window_size - max_freq) <= k`.",
-        "starter_code": "def character_replacement(s, k):\n    pass\n",
+        "starter_code": "def character_replacement(s: str, k: int) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("ABAB", 2), "expected": 4},
             {"input": ("AABABBA", 1), "expected": 4},
@@ -1072,7 +1072,7 @@ Output: "BANC"
 ```
 """,
         "python_tips": "Hint: sliding window with two frequency counters — one for `t`, one for the current window.",
-        "starter_code": "def min_window(s, t):\n    pass\n",
+        "starter_code": "def min_window(s: str, t: str) -> str:\n    pass\n",
         "test_cases": [
             {"input": ("ADOBECODEBANC", "ABC"), "expected": "BANC"},
             {"input": ("a", "a"), "expected": "a"},
@@ -1117,7 +1117,7 @@ Output: [3,3,5,5,6,7]
 ```
 """,
         "python_tips": "Hint: use a monotonic deque (collections.deque) to track the maximum in O(n) total.",
-        "starter_code": "def max_sliding_window(nums, k):\n    pass\n",
+        "starter_code": "def max_sliding_window(nums: list[int], k: int) -> list[int]:\n    pass\n",
         "test_cases": [
             {"input": ([1, 3, -1, -3, 5, 3, 6, 7], 3), "expected": [3, 3, 5, 5, 6, 7]},
             {"input": ([1], 1), "expected": [1]},
@@ -1157,7 +1157,7 @@ Output: False
 ```
 """,
         "python_tips": "Hint: use a stack. Push opening brackets; on a closing bracket, pop and check it matches.",
-        "starter_code": "def is_valid(s):\n    pass\n",
+        "starter_code": "def is_valid(s: str) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("()",),      "expected": True},
             {"input": ("()[]{}", ), "expected": True},
@@ -1189,7 +1189,7 @@ Design a stack that supports `push`, `pop`, `top`, and retrieving the minimum el
 Implement `MinStack` with methods: `push(val)`, `pop()`, `top()`, `get_min()`.
 """,
         "python_tips": "Hint: maintain a second stack that tracks the current minimum at each level.",
-        "starter_code": "class MinStack:\n    def __init__(self): pass\n    def push(self, val): pass\n    def pop(self): pass\n    def top(self): pass\n    def get_min(self): pass\n",
+        "starter_code": "class MinStack:\n    def __init__(self) -> None: pass\n    def push(self, val: int) -> None: pass\n    def pop(self) -> None: pass\n    def top(self) -> int: pass\n    def get_min(self) -> int: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -1232,7 +1232,7 @@ Output: 9    # ((2 + 1) * 3) = 9
 ```
 """,
         "python_tips": "Hint: push numbers onto a stack; on an operator, pop two values, compute, push result.",
-        "starter_code": "def eval_rpn(tokens):\n    pass\n",
+        "starter_code": "def eval_rpn(tokens: list[str]) -> int:\n    pass\n",
         "test_cases": [
             {"input": (["2", "1", "+", "3", "*"],), "expected": 9},
             {"input": (["4", "13", "5", "/", "+"],), "expected": 6},
@@ -1266,7 +1266,7 @@ Output: ["((()))","(()())","(())()","()(())","()()()"]
 ```
 """,
         "python_tips": "Hint: backtracking with a stack — track open and close counts; add `(` if open < n, `)` if close < open.",
-        "starter_code": "def generate_parenthesis(n):\n    pass\n",
+        "starter_code": "def generate_parenthesis(n: int) -> list[str]:\n    pass\n",
         "test_cases": [
             {"input": (1,), "expected": ["()"]},
             {"input": (3,), "expected": ["((()))","(()())","(())()","()(())","()()()"], "unordered": True},
@@ -1301,7 +1301,7 @@ Output: [1,1,4,2,1,1,0,0]
 ```
 """,
         "python_tips": "Hint: use a monotonic stack storing indices of temperatures waiting for a warmer day.",
-        "starter_code": "def daily_temperatures(temperatures):\n    pass\n",
+        "starter_code": "def daily_temperatures(temperatures: list[int]) -> list[int]:\n    pass\n",
         "test_cases": [
             {"input": ([73,74,75,71,69,72,76,73],), "expected": [1,1,4,2,1,1,0,0]},
             {"input": ([30,40,50,60],), "expected": [1,1,1,0]},
@@ -1333,7 +1333,7 @@ Output: 3
 ```
 """,
         "python_tips": "Hint: sort by position descending, compute time to reach target. If next car is slower, it joins the fleet.",
-        "starter_code": "def car_fleet(target, position, speed):\n    pass\n",
+        "starter_code": "def car_fleet(target: int, position: list[int], speed: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": (12, [10,8,0,5,3], [2,4,1,1,3]), "expected": 3},
             {"input": (10, [3], [3]), "expected": 1},
@@ -1364,7 +1364,7 @@ Output: 10
 ```
 """,
         "python_tips": "Hint: monotonic increasing stack. When a bar is shorter than the top of the stack, pop and calculate the area.",
-        "starter_code": "def largest_rectangle_area(heights):\n    pass\n",
+        "starter_code": "def largest_rectangle_area(heights: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([2,1,5,6,2,3],), "expected": 10},
             {"input": ([2,4],), "expected": 4},
@@ -1399,7 +1399,7 @@ Output: True
 ```
 """,
         "python_tips": "Hint: treat the matrix as a flat sorted array. Row = mid // cols, Col = mid % cols.",
-        "starter_code": "def search_matrix(matrix, target):\n    pass\n",
+        "starter_code": "def search_matrix(matrix: list[list[int]], target: int) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ([[1,3,5,7],[10,11,16,20],[23,30,34,60]], 3), "expected": True},
             {"input": ([[1,3,5,7],[10,11,16,20],[23,30,34,60]], 13), "expected": False},
@@ -1432,7 +1432,7 @@ Output: 4
 ```
 """,
         "python_tips": "Hint: binary search on the answer (k). For a given k, hours_needed = sum(ceil(pile/k) for pile in piles).",
-        "starter_code": "def min_eating_speed(piles, h):\n    pass\n",
+        "starter_code": "def min_eating_speed(piles: list[int], h: int) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([3,6,7,11], 8), "expected": 4},
             {"input": ([30,11,23,4,20], 5), "expected": 30},
@@ -1457,7 +1457,7 @@ def min_eating_speed(piles, h):
         "difficulty": "Medium",
         "description": "Given a rotated sorted array, find the minimum element in O(log n) time.",
         "python_tips": "Hint: binary search comparing mid to right. If nums[mid] > nums[right], min is in the right half.",
-        "starter_code": "def find_min(nums):\n    pass\n",
+        "starter_code": "def find_min(nums: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([3,4,5,1,2],), "expected": 1},
             {"input": ([4,5,6,7,0,1,2],), "expected": 0},
@@ -1482,7 +1482,7 @@ def find_min(nums):
         "difficulty": "Medium",
         "description": "Given a rotated sorted array with no duplicates, search for `target` in O(log n). Return index or -1.",
         "python_tips": "Hint: standard binary search, but determine which half is sorted before deciding which direction to go.",
-        "starter_code": "def search(nums, target):\n    pass\n",
+        "starter_code": "def search(nums: list[int], target: int) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([4,5,6,7,0,1,2], 0), "expected": 4},
             {"input": ([4,5,6,7,0,1,2], 3), "expected": -1},
@@ -1513,7 +1513,7 @@ def search(nums, target):
         "difficulty": "Medium",
         "description": "Design a time-based key-value store supporting set(key, value, timestamp) and get(key, timestamp) returning the most recent value at or before timestamp.",
         "python_tips": "Hint: store list of (timestamp, value) per key, then binary search for the closest timestamp.",
-        "starter_code": "class TimeMap:\n    def __init__(self): pass\n    def set(self, key, value, timestamp): pass\n    def get(self, key, timestamp): pass\n",
+        "starter_code": "class TimeMap:\n    def __init__(self) -> None: pass\n    def set(self, key: str, value: str, timestamp: int) -> None: pass\n    def get(self, key: str, timestamp: int) -> str: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -1544,7 +1544,7 @@ class TimeMap:
         "difficulty": "Hard",
         "description": "Given two sorted arrays, find the median of the combined sorted array in O(log(m+n)) time.",
         "python_tips": "Hint: binary search on the smaller array to find the correct partition point.",
-        "starter_code": "def find_median_sorted_arrays(nums1, nums2):\n    pass\n",
+        "starter_code": "def find_median_sorted_arrays(nums1: list[int], nums2: list[int]) -> float:\n    pass\n",
         "test_cases": [
             {"input": ([1,3], [2]), "expected": 2.0},
             {"input": ([1,2], [3,4]), "expected": 2.5},
@@ -1582,7 +1582,7 @@ def find_median_sorted_arrays(nums1, nums2):
         "difficulty": "Easy",
         "description": "Given the head of a singly linked list, reverse it and return the new head.",
         "python_tips": "Hint: use three pointers: prev=None, curr=head, next_node. Re-link curr.next = prev, advance all three.",
-        "starter_code": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val=val; self.next=next\n\ndef reverse_list(head):\n    pass\n",
+        "starter_code": "class ListNode:\n    def __init__(self, val: int = 0, next: 'ListNode | None' = None) -> None:\n        self.val=val; self.next=next\n\ndef reverse_list(head: ListNode | None) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[1,2,3,4,5]",), "expected": "list:[5,4,3,2,1]", "is_list": True},
             {"input": ("list:[1,2]",), "expected": "list:[2,1]", "is_list": True},
@@ -1606,7 +1606,7 @@ def reverse_list(head):
         "difficulty": "Easy",
         "description": "Merge two sorted linked lists into one sorted list.",
         "python_tips": "Hint: use a dummy head node. Compare current nodes of both lists; link the smaller one.",
-        "starter_code": "def merge_two_lists(list1, list2):\n    pass\n",
+        "starter_code": "def merge_two_lists(list1: ListNode | None, list2: ListNode | None) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[1,2,4]", "list:[1,3,4]"), "expected": "list:[1,1,2,3,4,4]", "is_list": True},
             {"input": ("list:[]", "list:[]"), "expected": "list:[]", "is_list": True},
@@ -1632,7 +1632,7 @@ def merge_two_lists(list1, list2):
         "difficulty": "Medium",
         "description": "Given L0→L1→…→Ln, reorder it to L0→Ln→L1→Ln-1→…",
         "python_tips": "Hint: find midpoint (slow/fast pointer), reverse the second half, then merge both halves.",
-        "starter_code": "def reorder_list(head):\n    pass\n",
+        "starter_code": "def reorder_list(head: ListNode | None) -> None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[1,2,3,4]",), "expected": "list:[1,4,2,3]", "is_list": True, "check_head": True},
             {"input": ("list:[1,2,3,4,5]",), "expected": "list:[1,5,2,4,3]", "is_list": True, "check_head": True},
@@ -1667,7 +1667,7 @@ def reorder_list(head):
         "difficulty": "Medium",
         "description": "Remove the nth node from the end of the linked list in one pass.",
         "python_tips": "Hint: two pointers separated by n steps. When fast reaches the end, slow is at the node to remove.",
-        "starter_code": "def remove_nth_from_end(head, n):\n    pass\n",
+        "starter_code": "def remove_nth_from_end(head: ListNode | None, n: int) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[1,2,3,4,5]", 2), "expected": "list:[1,2,3,5]", "is_list": True},
             {"input": ("list:[1]", 1), "expected": "list:[]", "is_list": True},
@@ -1693,7 +1693,7 @@ def remove_nth_from_end(head, n):
         "difficulty": "Medium",
         "description": "Deep copy a linked list where each node also has a random pointer.",
         "python_tips": "Hint: use a hash map from original node to its copy. First pass creates copies, second pass links them.",
-        "starter_code": "def copy_random_list(head):\n    pass\n",
+        "starter_code": "def copy_random_list(head: 'Node | None') -> 'Node | None':\n    pass\n",
         "test_cases": [],
         "solution": """\
 def copy_random_list(head):
@@ -1718,7 +1718,7 @@ def copy_random_list(head):
         "difficulty": "Medium",
         "description": "Two non-empty linked lists represent non-negative integers in reverse order. Add them and return the sum as a linked list.",
         "python_tips": "Hint: simulate grade-school addition with a `carry` variable. Advance both pointers simultaneously.",
-        "starter_code": "def add_two_numbers(l1, l2):\n    pass\n",
+        "starter_code": "def add_two_numbers(l1: ListNode | None, l2: ListNode | None) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[2,4,3]", "list:[5,6,4]"), "expected": "list:[7,0,8]", "is_list": True},
             {"input": ("list:[0]", "list:[0]"), "expected": "list:[0]", "is_list": True},
@@ -1747,7 +1747,7 @@ def add_two_numbers(l1, l2):
         "difficulty": "Easy",
         "description": "Given the head of a linked list, determine if there is a cycle.",
         "python_tips": "Hint: Floyd's tortoise & hare — slow moves 1 step, fast moves 2. If they meet, there's a cycle.",
-        "starter_code": "def has_cycle(head):\n    pass\n",
+        "starter_code": "def has_cycle(head: ListNode | None) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("list:[3,2,0,-4]",), "expected": True,  "is_list": True, "cycle_pos": 1},
             {"input": ("list:[1,2]",),       "expected": True,  "is_list": True, "cycle_pos": 0},
@@ -1771,7 +1771,7 @@ def has_cycle(head):
         "difficulty": "Medium",
         "description": "Given an array of n+1 integers where each integer is between 1 and n, find the duplicate.",
         "python_tips": "Hint: treat array values as linked list pointers. Use Floyd's cycle detection.",
-        "starter_code": "def find_duplicate(nums):\n    pass\n",
+        "starter_code": "def find_duplicate(nums: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([1,3,4,2,2],), "expected": 2},
             {"input": ([3,1,3,4,2],), "expected": 3},
@@ -1797,7 +1797,7 @@ def find_duplicate(nums):
         "difficulty": "Medium",
         "description": "Design a data structure that follows the LRU (Least Recently Used) cache eviction policy with O(1) get and put.",
         "python_tips": "Hint: use an OrderedDict or a doubly-linked list + hash map.",
-        "starter_code": "class LRUCache:\n    def __init__(self, capacity): pass\n    def get(self, key): pass\n    def put(self, key, value): pass\n",
+        "starter_code": "class LRUCache:\n    def __init__(self, capacity: int) -> None: pass\n    def get(self, key: int) -> int: pass\n    def put(self, key: int, value: int) -> None: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -1831,7 +1831,7 @@ class LRUCache:
         "difficulty": "Hard",
         "description": "Merge k sorted linked lists into one sorted list.",
         "python_tips": "Hint: use a min-heap of (value, index, node) tuples for efficient minimum retrieval.",
-        "starter_code": "def merge_k_lists(lists):\n    pass\n",
+        "starter_code": "def merge_k_lists(lists: list[ListNode | None]) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": (["list:[1,4,5]", "list:[1,3,4]", "list:[2,6]"],), "expected": "list:[1,1,2,3,4,4,5,6]", "is_list": True},
             {"input": ([],), "expected": "list:[]", "is_list": True},
@@ -1858,7 +1858,7 @@ def merge_k_lists(lists):
         "difficulty": "Hard",
         "description": "Given a linked list, reverse nodes in groups of k and return the modified list.",
         "python_tips": "Hint: check if k nodes remain, reverse them, then recursively handle the rest.",
-        "starter_code": "def reverse_k_group(head, k):\n    pass\n",
+        "starter_code": "def reverse_k_group(head: ListNode | None, k: int) -> ListNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("list:[1,2,3,4,5]", 2), "expected": "list:[2,1,4,3,5]", "is_list": True},
             {"input": ("list:[1,2,3,4,5]", 3), "expected": "list:[3,2,1,4,5]", "is_list": True},
@@ -1889,7 +1889,7 @@ def reverse_k_group(head, k):
         "difficulty": "Easy",
         "description": "Given the root of a binary tree, return its maximum depth.",
         "python_tips": "Hint: recursion — max depth = 1 + max(depth(left), depth(right)). Base case: None → 0.",
-        "starter_code": "def max_depth(root):\n    pass\n",
+        "starter_code": "def max_depth(root: TreeNode | None) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,9,20,null,null,15,7]",), "expected": 3, "is_tree": True},
             {"input": ("tree:[1,null,2]",), "expected": 2, "is_tree": True},
@@ -1908,7 +1908,7 @@ def max_depth(root):
         "difficulty": "Easy",
         "description": "Given the root of a binary tree, return the length of the diameter (longest path between any two nodes).",
         "python_tips": "Hint: for each node, diameter through it = depth(left) + depth(right). Track the global max.",
-        "starter_code": "def diameter_of_binary_tree(root):\n    pass\n",
+        "starter_code": "def diameter_of_binary_tree(root: TreeNode | None) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[1,2,3,4,5]",), "expected": 3, "is_tree": True},
             {"input": ("tree:[1,2]",), "expected": 1, "is_tree": True},
@@ -1932,7 +1932,7 @@ def diameter_of_binary_tree(root):
         "difficulty": "Easy",
         "description": "Determine if a binary tree is height-balanced (depth of subtrees never differ by more than 1).",
         "python_tips": "Hint: recursive DFS returning height; return -1 to signal imbalance early.",
-        "starter_code": "def is_balanced(root):\n    pass\n",
+        "starter_code": "def is_balanced(root: TreeNode | None) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,9,20,null,null,15,7]",), "expected": True, "is_tree": True},
             {"input": ("tree:[1,2,2,3,3,null,null,4,4]",), "expected": False, "is_tree": True},
@@ -1955,7 +1955,7 @@ def is_balanced(root):
         "difficulty": "Easy",
         "description": "Given the roots of two binary trees, check if they are the same.",
         "python_tips": "Hint: recursively compare values and both subtrees.",
-        "starter_code": "def is_same_tree(p, q):\n    pass\n",
+        "starter_code": "def is_same_tree(p: TreeNode | None, q: TreeNode | None) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[1,2,3]", "tree:[1,2,3]"), "expected": True, "is_tree": True},
             {"input": ("tree:[1,2]", "tree:[1,null,2]"), "expected": False, "is_tree": True},
@@ -1975,7 +1975,7 @@ def is_same_tree(p, q):
         "difficulty": "Easy",
         "description": "Given the roots of two binary trees `root` and `subRoot`, return True if `subRoot` is a subtree of `root`.",
         "python_tips": "Hint: for each node in root, check if the subtree rooted there equals subRoot using isSameTree.",
-        "starter_code": "def is_subtree(root, sub_root):\n    pass\n",
+        "starter_code": "def is_subtree(root: TreeNode | None, sub_root: TreeNode | None) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,4,5,1,2]", "tree:[4,1,2]"), "expected": True, "is_tree": True},
             {"input": ("tree:[3,4,5,1,2,null,null,null,null,0]", "tree:[4,1,2]"), "expected": False, "is_tree": True},
@@ -1998,7 +1998,7 @@ def is_subtree(root, sub_root):
         "difficulty": "Medium",
         "description": "Given a BST and two nodes p and q, find their lowest common ancestor.",
         "python_tips": "Hint: in a BST, if both p and q are less than node, go left. If both greater, go right. Otherwise, current node is the LCA.",
-        "starter_code": "def lowest_common_ancestor(root, p, q):\n    pass\n",
+        "starter_code": "def lowest_common_ancestor(root: TreeNode | None, p: TreeNode, q: TreeNode) -> TreeNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[6,2,8,0,4,null,null,null,null,3,5]", "treenode:2", "treenode:8"), "expected": 6, "is_tree": True},
             {"input": ("tree:[6,2,8,0,4,null,null,null,null,3,5]", "treenode:2", "treenode:4"), "expected": 2, "is_tree": True},
@@ -2022,7 +2022,7 @@ def lowest_common_ancestor(root, p, q):
         "difficulty": "Medium",
         "description": "Return the level-order traversal of a binary tree's nodes' values (i.e., from left to right, level by level).",
         "python_tips": "Hint: BFS using a queue (collections.deque). Process all nodes at the current level before moving to the next.",
-        "starter_code": "def level_order(root):\n    pass\n",
+        "starter_code": "def level_order(root: TreeNode | None) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,9,20,null,null,15,7]",), "expected": [[3],[9,20],[15,7]], "is_tree": True},
             {"input": ("tree:[1]",), "expected": [[1]], "is_tree": True},
@@ -2051,7 +2051,7 @@ def level_order(root):
         "difficulty": "Medium",
         "description": "Imagine standing on the right side of a binary tree. Return the values you can see.",
         "python_tips": "Hint: BFS level order traversal — take the last node of each level.",
-        "starter_code": "def right_side_view(root):\n    pass\n",
+        "starter_code": "def right_side_view(root: TreeNode | None) -> list[int]:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[1,2,3,null,5,null,4]",), "expected": [1,3,4], "is_tree": True},
             {"input": ("tree:[1,null,3]",), "expected": [1,3], "is_tree": True},
@@ -2080,7 +2080,7 @@ def right_side_view(root):
         "difficulty": "Medium",
         "description": "A node X is 'good' if there are no nodes with a value greater than X on the path from root to X. Count good nodes.",
         "python_tips": "Hint: DFS passing the max value seen so far along the path.",
-        "starter_code": "def good_nodes(root):\n    pass\n",
+        "starter_code": "def good_nodes(root: TreeNode) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,1,4,3,null,1,5]",), "expected": 4, "is_tree": True},
             {"input": ("tree:[3,3,null,4,2]",), "expected": 3, "is_tree": True},
@@ -2103,7 +2103,7 @@ def good_nodes(root):
         "difficulty": "Medium",
         "description": "Determine if a binary tree is a valid BST.",
         "python_tips": "Hint: DFS with min/max bounds. Each node must satisfy min < node.val < max.",
-        "starter_code": "def is_valid_bst(root):\n    pass\n",
+        "starter_code": "def is_valid_bst(root: TreeNode | None) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[2,1,3]",), "expected": True, "is_tree": True},
             {"input": ("tree:[5,1,4,null,null,3,6]",), "expected": False, "is_tree": True},
@@ -2125,7 +2125,7 @@ def is_valid_bst(root):
         "difficulty": "Medium",
         "description": "Given the root of a BST and an integer k, return the kth smallest value.",
         "python_tips": "Hint: in-order traversal of a BST gives sorted order. Count nodes as you visit.",
-        "starter_code": "def kth_smallest(root, k):\n    pass\n",
+        "starter_code": "def kth_smallest(root: TreeNode | None, k: int) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[3,1,4,null,2]", 1), "expected": 1, "is_tree": True},
             {"input": ("tree:[5,3,6,2,4,null,null,1]", 3), "expected": 3, "is_tree": True},
@@ -2150,7 +2150,7 @@ def kth_smallest(root, k):
         "difficulty": "Medium",
         "description": "Given preorder and inorder traversal arrays, reconstruct the binary tree.",
         "python_tips": "Hint: preorder[0] is root. Find it in inorder to split left/right subtrees. Recurse.",
-        "starter_code": "def build_tree(preorder, inorder):\n    pass\n",
+        "starter_code": "def build_tree(preorder: list[int], inorder: list[int]) -> TreeNode | None:\n    pass\n",
         "test_cases": [
             {"input": ([3,9,20,15,7], [9,3,15,20,7]), "expected": "tree:[3,9,20,null,null,15,7]", "is_tree": True},
             {"input": ([-1], [-1]), "expected": "tree:[-1]", "is_tree": True},
@@ -2173,7 +2173,7 @@ def build_tree(preorder, inorder):
         "difficulty": "Hard",
         "description": "Find the maximum path sum in a binary tree (path can start and end at any node).",
         "python_tips": "Hint: DFS returning max gain from each subtree. Track global max including both children.",
-        "starter_code": "def max_path_sum(root):\n    pass\n",
+        "starter_code": "def max_path_sum(root: TreeNode) -> int:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[1,2,3]",), "expected": 6, "is_tree": True},
             {"input": ("tree:[-10,9,20,null,null,15,7]",), "expected": 42, "is_tree": True},
@@ -2199,7 +2199,7 @@ def max_path_sum(root):
         "difficulty": "Hard",
         "description": "Design an algorithm to serialize and deserialize a binary tree.",
         "python_tips": "Hint: use BFS or DFS with null markers. Store values separated by commas.",
-        "starter_code": "def serialize(root):\n    pass\n\ndef deserialize(data):\n    pass\n",
+        "starter_code": "def serialize(root: TreeNode | None) -> str:\n    pass\n\ndef deserialize(data: str) -> TreeNode | None:\n    pass\n",
         "test_cases": [
             {"input": ("tree:[1,2,3,null,null,4,5]",), "expected": "tree:[1,2,3,null,null,4,5]", "is_tree": True, "encode_decode": True},
             {"input": ("tree:[]",), "expected": "tree:[]", "is_tree": True, "encode_decode": True},
@@ -2248,7 +2248,7 @@ def deserialize(data):
         "difficulty": "Medium",
         "description": "Implement a trie with insert, search, and startsWith methods.",
         "python_tips": "Hint: each node is a dict of children + a boolean `is_end`. Walk character by character.",
-        "starter_code": "class Trie:\n    def __init__(self): pass\n    def insert(self, word): pass\n    def search(self, word): pass\n    def starts_with(self, prefix): pass\n",
+        "starter_code": "class Trie:\n    def __init__(self) -> None: pass\n    def insert(self, word: str) -> None: pass\n    def search(self, word: str) -> bool: pass\n    def starts_with(self, prefix: str) -> bool: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -2287,7 +2287,7 @@ class Trie:
         "difficulty": "Medium",
         "description": "Design a data structure that supports addWord(word) and search(word) where '.' can match any letter.",
         "python_tips": "Hint: trie + DFS for '.' wildcard — try all children when you encounter a dot.",
-        "starter_code": "class WordDictionary:\n    def __init__(self): pass\n    def add_word(self, word): pass\n    def search(self, word): pass\n",
+        "starter_code": "class WordDictionary:\n    def __init__(self) -> None: pass\n    def add_word(self, word: str) -> None: pass\n    def search(self, word: str) -> bool: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -2322,7 +2322,7 @@ class WordDictionary:
         "difficulty": "Hard",
         "description": "Given a board of characters and a list of words, return all words that can be found in the board.",
         "python_tips": "Hint: build a trie of all words, then DFS from each cell on the board matching trie paths.",
-        "starter_code": "def find_words(board, words):\n    pass\n",
+        "starter_code": "def find_words(board: list[list[str]], words: list[str]) -> list[str]:\n    pass\n",
         "test_cases": [
             {"input": ([["o","a","a","n"],["e","t","a","e"],["i","h","k","r"],["i","f","l","v"]], ["oath","pea","eat","rain"]), "expected": ["eat","oath"], "unordered": True},
             {"input": ([["a","b"],["c","d"]], ["abcb"]), "expected": []},
@@ -2363,7 +2363,7 @@ def find_words(board, words):
         "difficulty": "Easy",
         "description": "Design a class that finds the kth largest element in a stream.",
         "python_tips": "Hint: maintain a min-heap of size k. The root is always the kth largest.",
-        "starter_code": "class KthLargest:\n    def __init__(self, k, nums): pass\n    def add(self, val): pass\n",
+        "starter_code": "class KthLargest:\n    def __init__(self, k: int, nums: list[int]) -> None: pass\n    def add(self, val: int) -> int: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -2394,7 +2394,7 @@ class KthLargest:
         "difficulty": "Easy",
         "description": "Stones are smashed together. The heaviest two are chosen each round. Return the weight of the last stone (or 0).",
         "python_tips": "Hint: use a max-heap (negate values since Python's heapq is a min-heap).",
-        "starter_code": "def last_stone_weight(stones):\n    pass\n",
+        "starter_code": "def last_stone_weight(stones: list[int]) -> int:\n    pass\n",
         "test_cases": [
             {"input": ([2,7,4,1,8,1],), "expected": 1},
             {"input": ([1],), "expected": 1},
@@ -2418,7 +2418,7 @@ def last_stone_weight(stones):
         "difficulty": "Medium",
         "description": "Given a list of points, return the k closest to the origin (0,0).",
         "python_tips": "Hint: use heapq.nsmallest with key=lambda p: p[0]**2 + p[1]**2.",
-        "starter_code": "def k_closest(points, k):\n    pass\n",
+        "starter_code": "def k_closest(points: list[list[int]], k: int) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([[1,3],[-2,2]], 1), "expected": [[-2,2]]},
             {"input": ([[3,3],[5,-1],[-2,4]], 2), "expected": [[3,3],[-2,4]], "unordered": True},
@@ -2436,7 +2436,7 @@ def k_closest(points, k):
         "difficulty": "Medium",
         "description": "Given a list of CPU tasks and cooldown n, find the minimum intervals needed to finish all tasks.",
         "python_tips": "Hint: greedy — always pick the most frequent remaining task. Use a max-heap and a cooldown queue.",
-        "starter_code": "def least_interval(tasks, n):\n    pass\n",
+        "starter_code": "def least_interval(tasks: list[str], n: int) -> int:\n    pass\n",
         "test_cases": [
             {"input": (["A","A","A","B","B","B"], 2), "expected": 8},
             {"input": (["A","C","A","B","D","B"], 1), "expected": 6},
@@ -2466,7 +2466,7 @@ def least_interval(tasks, n):
         "difficulty": "Medium",
         "description": "Design a simplified Twitter: postTweet, getNewsFeed (10 most recent from followed users), follow, unfollow.",
         "python_tips": "Hint: use a heap to merge each user's tweet list. Store tweets as (timestamp, tweetId).",
-        "starter_code": "class Twitter:\n    def __init__(self): pass\n    def post_tweet(self, userId, tweetId): pass\n    def get_news_feed(self, userId): pass\n    def follow(self, followerId, followeeId): pass\n    def unfollow(self, followerId, followeeId): pass\n",
+        "starter_code": "class Twitter:\n    def __init__(self) -> None: pass\n    def post_tweet(self, userId: int, tweetId: int) -> None: pass\n    def get_news_feed(self, userId: int) -> list[int]: pass\n    def follow(self, followerId: int, followeeId: int) -> None: pass\n    def unfollow(self, followerId: int, followeeId: int) -> None: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -2517,7 +2517,7 @@ class Twitter:
         "difficulty": "Hard",
         "description": "Design a data structure to add numbers and find the median at any time.",
         "python_tips": "Hint: use two heaps — a max-heap for the lower half, a min-heap for the upper half. Keep them balanced.",
-        "starter_code": "class MedianFinder:\n    def __init__(self): pass\n    def add_num(self, num): pass\n    def find_median(self): pass\n",
+        "starter_code": "class MedianFinder:\n    def __init__(self) -> None: pass\n    def add_num(self, num: int) -> None: pass\n    def find_median(self) -> float: pass\n",
         "test_cases": [
             {
                 "class_test": True,
@@ -2556,7 +2556,7 @@ class MedianFinder:
         "difficulty": "Medium",
         "description": "Given an integer array with unique elements, return all possible subsets.",
         "python_tips": "Hint: backtracking — at each index either include or skip the element.",
-        "starter_code": "def subsets(nums):\n    pass\n",
+        "starter_code": "def subsets(nums: list[int]) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([1,2,3],), "expected": [[],[1],[2],[1,2],[3],[1,3],[2,3],[1,2,3]], "unordered": True},
         ],
@@ -2580,7 +2580,7 @@ def subsets(nums):
         "difficulty": "Medium",
         "description": "Find all unique combinations in candidates that sum to target. You may reuse the same number.",
         "python_tips": "Hint: backtracking — allow reusing same index. Stop when remaining sum < 0.",
-        "starter_code": "def combination_sum(candidates, target):\n    pass\n",
+        "starter_code": "def combination_sum(candidates: list[int], target: int) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([2,3,6,7], 7), "expected": [[2,2,3],[7]], "unordered": True},
         ],
@@ -2605,7 +2605,7 @@ def combination_sum(candidates, target):
         "difficulty": "Medium",
         "description": "Given a list of distinct integers, return all possible permutations.",
         "python_tips": "Hint: backtracking — swap elements in-place or track used elements with a boolean array.",
-        "starter_code": "def permute(nums):\n    pass\n",
+        "starter_code": "def permute(nums: list[int]) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([1,2,3],), "expected": [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]], "unordered": True},
         ],
@@ -2629,7 +2629,7 @@ def permute(nums):
         "difficulty": "Medium",
         "description": "Given an integer array that may contain duplicates, return all possible subsets (no duplicates).",
         "python_tips": "Hint: sort first, then skip duplicates at the same recursion depth.",
-        "starter_code": "def subsets_with_dup(nums):\n    pass\n",
+        "starter_code": "def subsets_with_dup(nums: list[int]) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([1,2,2],), "expected": [[],[1],[1,2],[1,2,2],[2],[2,2]], "unordered": True},
         ],
@@ -2655,7 +2655,7 @@ def subsets_with_dup(nums):
         "difficulty": "Medium",
         "description": "Given candidates (may have duplicates), find all unique combinations summing to target. Each number used once.",
         "python_tips": "Hint: sort + backtracking; skip duplicates at the same depth level.",
-        "starter_code": "def combination_sum2(candidates, target):\n    pass\n",
+        "starter_code": "def combination_sum2(candidates: list[int], target: int) -> list[list[int]]:\n    pass\n",
         "test_cases": [
             {"input": ([10,1,2,7,6,1,5], 8), "expected": [[1,1,6],[1,2,5],[1,7],[2,6]], "unordered": True},
         ],
@@ -2682,7 +2682,7 @@ def combination_sum2(candidates, target):
         "difficulty": "Medium",
         "description": "Given a 2D board and a word, return True if the word exists in the grid (adjacent cells, no reuse).",
         "python_tips": "Hint: DFS/backtracking from each cell. Mark cells as visited by temporarily replacing the character.",
-        "starter_code": "def exist(board, word):\n    pass\n",
+        "starter_code": "def exist(board: list[list[str]], word: str) -> bool:\n    pass\n",
         "test_cases": [
             {"input": ([["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "ABCCED"), "expected": True},
             {"input": ([["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], "SEE"),    "expected": True},
@@ -2708,7 +2708,7 @@ def exist(board, word):
         "difficulty": "Medium",
         "description": "Partition a string such that every substring is a palindrome. Return all possible partitions.",
         "python_tips": "Hint: backtracking — at each position, try all prefixes that are palindromes.",
-        "starter_code": "def partition(s):\n    pass\n",
+        "starter_code": "def partition(s: str) -> list[list[str]]:\n    pass\n",
         "test_cases": [
             {"input": ("aab",), "expected": [["a","a","b"],["aa","b"]], "unordered": True},
         ],
@@ -2734,7 +2734,7 @@ def partition(s):
         "difficulty": "Medium",
         "description": "Given a string of digits 2-9, return all possible letter combinations from a phone keypad.",
         "python_tips": "Hint: use a digit→letters map, then backtracking one digit at a time.",
-        "starter_code": "def letter_combinations(digits):\n    pass\n",
+        "starter_code": "def letter_combinations(digits: str) -> list[str]:\n    pass\n",
         "test_cases": [
             {"input": ("23",), "expected": ["ad","ae","af","bd","be","bf","cd","ce","cf"], "unordered": True},
             {"input": ("",),   "expected": []},
@@ -2809,7 +2809,7 @@ Think of the grid as a graph where each cell is a node connected to its 4 neighb
 4. This way, you won't count the same island twice.
 
 **DFS pattern on a grid:**
-```python3
+```python
 def dfs(grid, r, c):
     if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]):
         return
@@ -2825,7 +2825,7 @@ def dfs(grid, r, c):
 **Time:** O(m * n) — visit every cell at most once.
 """,
         "starter_code": """\
-def num_islands(grid):
+def num_islands(grid: list[list[str]]) -> int:
     \"\"\"
     Args:
         grid (list[list[str]]): 2D grid of '1' (land) and '0' (water)
@@ -2911,13 +2911,13 @@ When cloning a graph, the tricky part is handling cycles — you might visit the
 3. Connect the cloned node to its cloned neighbors.
 
 **With adjacency list representation**, this simplifies to a deep copy:
-```python3
+```python
 import copy
 clone = copy.deepcopy(adj)
 ```
 
 But to practice the graph traversal pattern, implement BFS yourself:
-```python3
+```python
 from collections import deque
 visited = {}
 queue = deque([start_node])
@@ -2926,7 +2926,7 @@ queue = deque([start_node])
 **Time:** O(V + E) where V = nodes, E = edges.
 """,
         "starter_code": """\
-def clone_graph(adj):
+def clone_graph(adj: list[list[int]]) -> list[list[int]]:
     \"\"\"
     Args:
         adj (list[list[int]]): adjacency list (1-indexed node values)
@@ -3010,7 +3010,7 @@ Instead of flowing water *from* each cell *to* the ocean (expensive), do it back
 
 **Why reverse?** When flowing backwards, water flows from lower to higher (or equal), so the condition is `heights[nr][nc] >= heights[r][c]`.
 
-```python3
+```python
 def dfs(r, c, visited, prev_height):
     if (r, c) in visited or r < 0 or r >= rows or c < 0 or c >= cols:
         return
@@ -3024,7 +3024,7 @@ def dfs(r, c, visited, prev_height):
 **Time:** O(m * n) — each cell visited at most twice (once per ocean).
 """,
         "starter_code": """\
-def pacific_atlantic(heights):
+def pacific_atlantic(heights: list[list[int]]) -> list[list[int]]:
     \"\"\"
     Args:
         heights (list[list[int]]): m x n grid of heights
@@ -3112,7 +3112,7 @@ This problem asks: "Does the prerequisite graph have a cycle?" If yes, you can't
 - WHITE (unvisited), GRAY (in current DFS path), BLACK (fully processed)
 - If you visit a GRAY node during DFS → cycle detected!
 
-```python3
+```python
 # 0 = unvisited, 1 = in-progress, 2 = done
 def dfs(course):
     if state[course] == 1: return False  # cycle!
@@ -3131,7 +3131,7 @@ def dfs(course):
 **Time:** O(V + E) where V = courses, E = prerequisites.
 """,
         "starter_code": """\
-def can_finish(num_courses, prerequisites):
+def can_finish(num_courses: int, prerequisites: list[list[int]]) -> bool:
     \"\"\"
     Args:
         num_courses   (int):             total number of courses
@@ -3220,7 +3220,7 @@ Explanation: No edges, so each node is its own component.
 Build an adjacency list, then count how many times you start a new DFS (each start = new component).
 
 **Approach 2 — Union-Find (great to learn!):**
-```python3
+```python
 parent = list(range(n))  # each node is its own parent
 
 def find(x):
@@ -3239,7 +3239,7 @@ Start with `n` components. Each successful `union` reduces count by 1.
 **Time:** O(V + E) for DFS; nearly O(1) per operation for Union-Find with path compression.
 """,
         "starter_code": """\
-def count_components(n, edges):
+def count_components(n: int, edges: list[list[int]]) -> int:
     \"\"\"
     Args:
         n     (int):             number of nodes (0 to n-1)
@@ -3326,7 +3326,7 @@ Explanation: Not connected — {0,1} and {2,3} are separate.
 If edges != n - 1, return False immediately (too few = disconnected, too many = cycle).
 
 **Using Union-Find:**
-```python3
+```python
 parent = list(range(n))
 for a, b in edges:
     if find(a) == find(b):  # already connected → cycle!
@@ -3342,7 +3342,7 @@ Or simply: if `len(edges) == n - 1` and Union-Find produces 1 component, it's a 
 **Time:** O(V + E).
 """,
         "starter_code": """\
-def valid_tree(n, edges):
+def valid_tree(n: int, edges: list[list[int]]) -> bool:
     \"\"\"
     Args:
         n     (int):             number of nodes (0 to n-1)
@@ -3440,7 +3440,7 @@ Compare each pair of adjacent words. Find the first differing character — that
 **Important edge case:** If a longer word comes before its prefix (e.g., ["abc", "ab"]), the ordering is **invalid**.
 
 **Step 2 — Topological sort (BFS/Kahn's algorithm):**
-```python3
+```python
 from collections import deque, defaultdict
 
 in_degree = {c: 0 for c in all_chars}
@@ -3464,7 +3464,7 @@ If `len(result) < len(all_chars)`, there's a cycle → return "".
 **Time:** O(C) where C = total characters across all words.
 """,
         "starter_code": """\
-def alien_order(words):
+def alien_order(words: list[str]) -> str:
     \"\"\"
     Args:
         words (list[str]): words sorted in alien dictionary order
@@ -3565,7 +3565,7 @@ This is the classic intro to DP! Notice the pattern:
 **Base cases:** `ways(1) = 1`, `ways(2) = 2`.
 
 **Bottom-up approach (no recursion, O(1) space):**
-```python3
+```python
 def climb_stairs(n):
     if n <= 2:
         return n
@@ -3580,7 +3580,7 @@ You only need the last two values — no need for an entire array!
 **Time:** O(n) | **Space:** O(1)
 """,
         "starter_code": """\
-def climb_stairs(n):
+def climb_stairs(n: int) -> int:
     \"\"\"
     Args:
         n (int): number of steps
@@ -3654,7 +3654,7 @@ At each house, you have two choices:
 **Base cases:** `dp[0] = nums[0]`, `dp[1] = max(nums[0], nums[1])`
 
 **Optimized O(1) space:**
-```python3
+```python
 def rob(nums):
     prev2, prev1 = 0, 0
     for num in nums:
@@ -3667,7 +3667,7 @@ Think of `prev1` as "best so far including or excluding the last house" and `pre
 **Time:** O(n) | **Space:** O(1)
 """,
         "starter_code": """\
-def rob(nums):
+def rob(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int]): money at each house
@@ -3736,7 +3736,7 @@ Since house 0 and house n-1 are adjacent in a circle, you can never rob both. So
 
 Take the **max** of both cases. Each sub-problem is just the regular House Robber!
 
-```python3
+```python
 def rob_ii(nums):
     if len(nums) == 1:
         return nums[0]
@@ -3752,7 +3752,7 @@ def rob_linear(nums):
 **Time:** O(n) | **Space:** O(1)
 """,
         "starter_code": """\
-def rob_ii(nums):
+def rob_ii(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int]): money at each house (arranged in a circle)
@@ -3831,7 +3831,7 @@ At each position `i`, you can decode:
 2. **Two digits** `s[i-1:i+1]` — valid if it's `"10"`..`"26"`. Add `dp[i-2]` ways.
 
 **Recurrence:**
-```python3
+```python
 dp[i] = 0
 if s[i] != '0':        dp[i] += dp[i-1]   # single digit
 if 10 <= int(s[i-1:i+1]) <= 26:  dp[i] += dp[i-2]   # two digits
@@ -3846,7 +3846,7 @@ if 10 <= int(s[i-1:i+1]) <= 26:  dp[i] += dp[i-2]   # two digits
 **Time:** O(n) | **Space:** O(1)
 """,
         "starter_code": """\
-def num_decodings(s):
+def num_decodings(s: str) -> int:
     \"\"\"
     Args:
         s (str): string of digits
@@ -3924,7 +3924,7 @@ Every palindrome has a center. For odd-length palindromes the center is one char
 - While `s[left] == s[right]`, it is a palindrome — count it and keep expanding.
 
 **Useful pattern:**
-```python3
+```python
 def count_from(s, left, right):
     count = 0
     while left >= 0 and right < len(s) and s[left] == s[right]:
@@ -3938,7 +3938,7 @@ def count_from(s, left, right):
 **Space complexity:** O(1) — no extra data structures.
 """,
         "starter_code": """\
-def count_substrings(s):
+def count_substrings(s: str) -> int:
     \"\"\"
     Args:
         s (str): input string
@@ -4013,7 +4013,7 @@ This uses the same "expand around center" technique as Palindromic Substrings, b
 - Try both odd-length centers `(i, i)` and even-length centers `(i, i+1)`.
 
 **Useful Python slice:**
-```python3
+```python
 s[left:right+1]   # substring from left to right inclusive
 ```
 
@@ -4021,7 +4021,7 @@ s[left:right+1]   # substring from left to right inclusive
 **Space complexity:** O(1) — only storing indices.
 """,
         "starter_code": """\
-def longest_palindrome(s):
+def longest_palindrome(s: str) -> str:
     \"\"\"
     Args:
         s (str): input string
@@ -4101,7 +4101,7 @@ Build up solutions from smaller amounts to the target amount.
 - For each amount from 1 to target, try every coin: if `coin ≤ i`, then `dp[i] = min(dp[i], dp[i - coin] + 1)`.
 
 **Useful Python syntax:**
-```python3
+```python
 dp = [float('inf')] * (amount + 1)   # list filled with infinity
 dp[0] = 0                             # base case
 min(a, b)                             # return smaller value
@@ -4111,7 +4111,7 @@ min(a, b)                             # return smaller value
 **Space complexity:** O(amount).
 """,
         "starter_code": """\
-def coin_change(coins, amount):
+def coin_change(coins: list[int], amount: int) -> int:
     \"\"\"
     Args:
         coins  (list[int]): coin denominations
@@ -4184,7 +4184,7 @@ Use a boolean array `dp` where `dp[i]` means the first `i` characters of `s` can
 - Convert `word_dict` to a `set` for O(1) lookups.
 
 **Useful Python syntax:**
-```python3
+```python
 word_set = set(word_dict)   # O(1) membership test
 s[j:i]                       # substring from index j to i-1
 ```
@@ -4193,7 +4193,7 @@ s[j:i]                       # substring from index j to i-1
 **Space complexity:** O(n).
 """,
         "starter_code": """\
-def word_break(s, word_dict):
+def word_break(s: str, word_dict: list[str]) -> bool:
     \"\"\"
     Args:
         s         (str):       the string to segment
@@ -4268,7 +4268,7 @@ Unlike maximum sum subarray, a negative number can flip the smallest product int
 - Keep a running `result = max(result, cur_max)`.
 
 **Useful Python syntax:**
-```python3
+```python
 cur_max, cur_min = cur_min, cur_max   # simultaneous swap
 max(a, b, c)                           # max of multiple values
 ```
@@ -4277,7 +4277,7 @@ max(a, b, c)                           # max of multiple values
 **Space complexity:** O(1).
 """,
         "starter_code": """\
-def max_product(nums):
+def max_product(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int]): array of integers
@@ -4349,7 +4349,7 @@ Output: 1   # all elements are the same
 - The answer is `max(dp)`.
 
 **Useful Python syntax:**
-```python3
+```python
 dp = [1] * len(nums)   # all initialized to 1
 max(dp)                  # find the global maximum
 ```
@@ -4358,7 +4358,7 @@ max(dp)                  # find the global maximum
 **Space complexity:** O(n) — the dp array.
 """,
         "starter_code": """\
-def length_of_lis(nums):
+def length_of_lis(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int]): array of integers
@@ -4426,7 +4426,7 @@ Explanation: From top-left to bottom-right there are three paths:
 - For every other cell: `dp[r][c] = dp[r-1][c] + dp[r][c-1]` (come from above or from the left).
 
 **Space optimization:** You only need the previous row, so you can use a 1D array:
-```python3
+```python
 dp = [1] * n
 for _ in range(1, m):
     for j in range(1, n):
@@ -4437,7 +4437,7 @@ for _ in range(1, m):
 **Space complexity:** O(n) with the optimized approach.
 """,
         "starter_code": """\
-def unique_paths(m, n):
+def unique_paths(m: int, n: int) -> int:
     \"\"\"
     Args:
         m (int): number of rows
@@ -4506,7 +4506,7 @@ Output: 0   # no common subsequence
 - Answer is `dp[len(text1)][len(text2)]`.
 
 **Building the table:**
-```python3
+```python
 dp = [[0] * (n + 1) for _ in range(m + 1)]   # (m+1) x (n+1) grid of zeros
 ```
 
@@ -4514,7 +4514,7 @@ dp = [[0] * (n + 1) for _ in range(m + 1)]   # (m+1) x (n+1) grid of zeros
 **Space complexity:** O(m * n).
 """,
         "starter_code": """\
-def longest_common_subsequence(text1, text2):
+def longest_common_subsequence(text1: str, text2: str) -> int:
     \"\"\"
     Args:
         text1 (str): first string
@@ -4592,7 +4592,7 @@ You never need to go back. If a position is reachable, all positions before it a
 **Space complexity:** O(1).
 """,
         "starter_code": """\
-def can_jump(nums):
+def can_jump(nums: list[int]) -> bool:
     \"\"\"
     Args:
         nums (list[int]): maximum jump length at each position
@@ -4662,7 +4662,7 @@ Split the problem into three parts:
 3. **After:** Add all remaining intervals.
 
 **Useful Python syntax:**
-```python3
+```python
 result = []
 result.append([start, end])  # add an interval
 min(a, b)                     # merge start
@@ -4673,7 +4673,7 @@ max(a, b)                     # merge end
 **Space complexity:** O(n) — the result list.
 """,
         "starter_code": """\
-def insert(intervals, new_interval):
+def insert(intervals: list[list[int]], new_interval: list[int]) -> list[list[int]]:
     \"\"\"
     Args:
         intervals    (list[list[int]]): sorted non-overlapping intervals
@@ -4749,7 +4749,7 @@ Explanation: [1,4] and [4,5] are considered overlapping (they share endpoint 4).
 **Two intervals overlap when:** the current start ≤ the previous end.
 
 **Useful Python syntax:**
-```python3
+```python
 intervals.sort(key=lambda x: x[0])   # sort by start time
 result[-1]                             # last element of the list
 ```
@@ -4758,7 +4758,7 @@ result[-1]                             # last element of the list
 **Space complexity:** O(n) — the result list.
 """,
         "starter_code": """\
-def merge(intervals):
+def merge(intervals: list[list[int]]) -> list[list[int]]:
     \"\"\"
     Args:
         intervals (list[list[int]]): list of intervals [start, end]
@@ -4835,7 +4835,7 @@ The trick is to sort intervals by **end time** and greedily keep as many as poss
 
 **Why sort by end time?** Finishing early leaves the most room for future intervals.
 
-```python3
+```python
 intervals.sort(key=lambda x: x[1])  # sort by end time
 ```
 
@@ -4843,7 +4843,7 @@ intervals.sort(key=lambda x: x[1])  # sort by end time
 **Space complexity:** O(1) extra space.
 """,
         "starter_code": """\
-def erase_overlap_intervals(intervals):
+def erase_overlap_intervals(intervals: list[list[int]]) -> int:
     \"\"\"
     Args:
         intervals (list[list[int]]): list of [start, end] intervals
@@ -4920,7 +4920,7 @@ If meetings are sorted by start time, you only need to check if each meeting sta
 - If `intervals[i][0] < intervals[i-1][1]`, there's an overlap — return False.
 - If you make it through all pairs, return True.
 
-```python3
+```python
 intervals.sort()  # sorts by first element by default
 ```
 
@@ -4928,7 +4928,7 @@ intervals.sort()  # sorts by first element by default
 **Space complexity:** O(1) extra space.
 """,
         "starter_code": """\
-def can_attend_meetings(intervals):
+def can_attend_meetings(intervals: list[list[int]]) -> bool:
     \"\"\"
     Args:
         intervals (list[list[int]]): list of [start, end] meeting times
@@ -5000,7 +5000,7 @@ Use a min-heap to track when each room becomes free.
 - Push the current meeting's end time onto the heap.
 - The heap size at the end = number of rooms needed.
 
-```python3
+```python
 import heapq
 heapq.heappush(heap, end_time)   # add a room
 heapq.heappop(heap)              # free earliest room
@@ -5011,7 +5011,7 @@ heap[0]                          # peek at earliest end time
 **Space complexity:** O(n).
 """,
         "starter_code": """\
-def min_meeting_rooms(intervals):
+def min_meeting_rooms(intervals: list[list[int]]) -> int:
     \"\"\"
     Args:
         intervals (list[list[int]]): list of [start, end] meeting times
@@ -5081,7 +5081,7 @@ A 90-degree clockwise rotation can be done in two simple steps:
 - Transposing flips the matrix along its diagonal.
 - Reversing each row then gives the clockwise rotation.
 
-```python3
+```python
 for i in range(n):
     for j in range(i + 1, n):
         matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
@@ -5091,7 +5091,7 @@ for i in range(n):
 **Space complexity:** O(1) — done in place.
 """,
         "starter_code": """\
-def rotate(matrix):
+def rotate(matrix: list[list[int]]) -> list[list[int]]:
     \"\"\"
     Args:
         matrix (list[list[int]]): n x n 2D matrix
@@ -5163,7 +5163,7 @@ Maintain four boundaries — `top`, `bottom`, `left`, `right` — and shrink the
 **Space complexity:** O(1) extra (not counting output).
 """,
         "starter_code": """\
-def spiral_order(matrix):
+def spiral_order(matrix: list[list[int]]) -> list[int]:
     \"\"\"
     Args:
         matrix (list[list[int]]): m x n matrix
@@ -5238,7 +5238,7 @@ Output: [[0,0,0,0],[0,4,5,0],[0,3,1,0]]
 1. First pass: find all rows and columns that contain a zero.
 2. Second pass: set every cell to zero if its row or column is in the zero set.
 
-```python3
+```python
 zero_rows = set()
 zero_cols = set()
 ```
@@ -5247,7 +5247,7 @@ zero_cols = set()
 **Space complexity:** O(m + n).
 """,
         "starter_code": """\
-def set_zeroes(matrix):
+def set_zeroes(matrix: list[list[int]]) -> list[list[int]]:
     \"\"\"
     Args:
         matrix (list[list[int]]): m x n matrix
@@ -5326,7 +5326,7 @@ You can check and strip bits one at a time using bitwise operators.
 - `n & (n - 1)` clears the lowest set bit.
 - Count how many times you can do this before `n == 0`.
 
-```python3
+```python
 n & 1       # last bit: 0 or 1
 n >> 1      # right shift by 1
 n & (n - 1) # clear lowest set bit
@@ -5335,7 +5335,7 @@ n & (n - 1) # clear lowest set bit
 **Time complexity:** O(number of bits) = O(32) = O(1).
 """,
         "starter_code": """\
-def hamming_weight(n):
+def hamming_weight(n: int) -> int:
     \"\"\"
     Args:
         n (int): a non-negative integer
@@ -5398,7 +5398,7 @@ You can build on previously computed answers instead of counting bits from scrat
 
 **Example:** `ans[5] = ans[5 >> 1] + (5 & 1) = ans[2] + 1 = 1 + 1 = 2`
 
-```python3
+```python
 ans = [0] * (n + 1)
 for i in range(1, n + 1):
     ans[i] = ans[i >> 1] + (i & 1)
@@ -5408,7 +5408,7 @@ for i in range(1, n + 1):
 **Space complexity:** O(n) for the output array.
 """,
         "starter_code": """\
-def count_bits(n):
+def count_bits(n: int) -> list[int]:
     \"\"\"
     Args:
         n (int): a non-negative integer
@@ -5466,7 +5466,7 @@ Extract each bit from the right and build the reversed number from the left.
 - Each iteration: shift `result` left by 1, then add the last bit of `n` (`n & 1`).
 - Shift `n` right by 1 to process the next bit.
 
-```python3
+```python
 result = 0
 for i in range(32):
     result = (result << 1) | (n & 1)
@@ -5477,7 +5477,7 @@ for i in range(32):
 **Space complexity:** O(1).
 """,
         "starter_code": """\
-def reverse_bits(n):
+def reverse_bits(n: int) -> int:
     \"\"\"
     Args:
         n (int): a 32-bit unsigned integer
@@ -5543,7 +5543,7 @@ Output: 8
 - The sum of `0` to `n` is `n * (n + 1) // 2`.
 - Subtract the actual sum of the array to find the missing number.
 
-```python3
+```python
 n = len(nums)
 expected_sum = n * (n + 1) // 2
 return expected_sum - sum(nums)
@@ -5558,7 +5558,7 @@ return expected_sum - sum(nums)
 **Space complexity:** O(1).
 """,
         "starter_code": """\
-def missing_number(nums):
+def missing_number(nums: list[int]) -> int:
     \"\"\"
     Args:
         nums (list[int]): array of n distinct numbers from range [0, n]
@@ -5620,7 +5620,7 @@ In binary, addition works like this:
 
 **The catch in Python:** Python integers have unlimited size, so negative numbers don't naturally wrap around like in C/Java. You need a **32-bit mask**.
 
-```python3
+```python
 MASK = 0xFFFFFFFF      # 32-bit mask (all 1s)
 MAX  = 0x7FFFFFFF      # max positive 32-bit int
 
@@ -5634,7 +5634,7 @@ a & MASK               # keep only lower 32 bits
 **Time complexity:** O(32) = O(1).
 """,
         "starter_code": """\
-def get_sum(a, b):
+def get_sum(a: int, b: int) -> int:
     \"\"\"
     Args:
         a (int): first integer
