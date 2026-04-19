@@ -1,5 +1,5 @@
 # Blind 75 Python Learning Agent
-
+Built so that myself can practice and learn DSA.
 A beginner-friendly web app to learn and practice the Blind 75 LeetCode problems in Python — powered by Claude AI.
 
 ## Features
