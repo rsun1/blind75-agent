@@ -24,6 +24,8 @@ for _log_name in ("streamlit", "streamlit.logger", "streamlit.runtime.scriptrunn
     logging.getLogger(_log_name).addFilter(_filter)
 logging.getLogger().addFilter(_filter)
 
+import json
+from pathlib import Path
 import streamlit as st
 from streamlit_ace import st_ace
 
@@ -31,6 +33,21 @@ from problems.problems import PROBLEMS, CATEGORIES, DIFFICULTY_ORDER, get_proble
 from runner.test_runner import run_tests
 from ai.hints import api_key_available, get_hint_streamed, get_learn_session_streamed
 from persistence import load_progress, save_progress
+
+# ── Pre-generated learn sessions ──────────────────────────────────────────────
+
+def _load_static_sessions() -> dict[str, str]:
+    """Load pre-generated learn sessions from learn_sessions.json."""
+    path = Path(__file__).parent / "learn_sessions.json"
+    if path.exists():
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return {}
+
+_STATIC_SESSIONS: dict[str, str] = _load_static_sessions()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Page config
@@ -524,30 +541,50 @@ def render_problem(problem: dict):
 
         st.divider()
 
-        # ── AI Learn Session ──────────────────────────────────────────────────
+        # ── Learn Session ─────────────────────────────────────────────────────
         st.markdown("### 📚 Learn Session")
-        st.caption(
-            "Get a full AI-powered tutorial: key insight, step-by-step approach, "
-            "example trace, annotated code walkthrough, complexity analysis, and more."
-        )
 
-        learn_col1, learn_col2 = st.columns([2, 5])
-        with learn_col1:
-            learn_clicked = st.button(
+        static_session = _STATIC_SESSIONS.get(str(pid))
+        ai_session     = st.session_state.learn_session_text.get(pid)
+
+        # Content to display: AI-generated takes priority over static
+        display_session = ai_session or static_session
+
+        if display_session:
+            st.markdown(display_session)
+
+            # Controls: regenerate / clear AI override
+            regen_col, clear_col, _ = st.columns([2, 2, 4])
+            with regen_col:
+                regen_clicked = st.button(
+                    "🔄 Regenerate with AI",
+                    key=f"learn_{pid}",
+                    use_container_width=True,
+                    disabled=not api_key_available(),
+                    help="Requires an Anthropic API key in .env" if not api_key_available() else "Regenerate using Claude",
+                )
+            with clear_col:
+                if ai_session and st.button("↩ Reset to Default", key=f"clear_learn_{pid}", use_container_width=True):
+                    st.session_state.learn_session_text.pop(pid, None)
+                    st.rerun()
+        else:
+            # No pre-generated content — show the generate button
+            st.caption(
+                "Get a full tutorial: key insight, step-by-step approach, "
+                "example trace, annotated code walkthrough, complexity analysis, and more."
+            )
+            regen_clicked = st.button(
                 "🎓 Start Learn Session",
                 key=f"learn_{pid}",
                 type="primary",
-                use_container_width=True,
+                use_container_width=False,
                 disabled=not api_key_available(),
                 help="Requires an Anthropic API key in .env" if not api_key_available() else "Generate a full teaching session for this problem",
             )
-        with learn_col2:
-            if pid in st.session_state.learn_session_text and st.session_state.learn_session_text[pid]:
-                if st.button("🗑 Clear Session", key=f"clear_learn_{pid}", use_container_width=False):
-                    st.session_state.learn_session_text.pop(pid, None)
-                    st.rerun()
+            if not api_key_available():
+                st.info("Add your `ANTHROPIC_API_KEY` to `.env` to unlock AI-powered learn sessions.")
 
-        if learn_clicked:
+        if regen_clicked:
             session_placeholder = st.empty()
             full_session = ""
             with st.spinner("Generating your learn session…"):
@@ -555,13 +592,7 @@ def render_problem(problem: dict):
                     full_session += chunk
                     session_placeholder.markdown(full_session)
             st.session_state.learn_session_text[pid] = full_session
-        elif pid in st.session_state.learn_session_text and st.session_state.learn_session_text[pid]:
-            st.markdown(st.session_state.learn_session_text[pid])
-
-        if not api_key_available():
-            st.info(
-                "Add your `ANTHROPIC_API_KEY` to `.env` to unlock the AI Learn Session."
-            )
+            st.rerun()
 
         st.divider()
 
